@@ -1,0 +1,2421 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Microprocesadores EC-1 y EC-2</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=Fira+Code:wght@400;500&display=swap">
+
+<style>
+/* Layout: single-column editorial with full-bleed accent bands */
+:root {
+  --bg: #f0f4f8;
+  --bg-surface: #ffffff;
+  --bg-code: #0d1b2a;
+  --fg: #1b2a4a;
+  --fg-muted: #5a6a8a;
+  --fg-code: #e0e6f0;
+  --accent: #0891b2;
+  --accent-glow: #06b6d4;
+  --accent2: #6d28d9;
+  --accent2-light: #8b5cf6;
+  --border: #d0d8e8;
+  --border-light: #e2e8f0;
+  --highlight: #ecfeff;
+  --tag-bg: #e0f2fe;
+  --tag-fg: #0369a1;
+  --hero-bg: #0a1628;
+  --hero-fg: #e8edf5;
+  --hero-accent: #22d3ee;
+  --section-alt: #f8fafc;
+  --success: #059669;
+  --warn: #d97706;
+  --copy-bg: rgba(255,255,255,0.08);
+  --copy-hover: rgba(255,255,255,0.15);
+  --nav-bg: rgba(10, 22, 40, 0.95);
+  --nav-fg: #e0e6f0;
+  --glossary-dt: #0e7490;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f172a;
+    --bg-surface: #1e293b;
+    --bg-code: #020617;
+    --fg: #e2e8f0;
+    --fg-muted: #94a3b8;
+    --fg-code: #e0e6f0;
+    --accent: #22d3ee;
+    --accent-glow: #06b6d4;
+    --accent2: #8b5cf6;
+    --accent2-light: #a78bfa;
+    --border: #334155;
+    --border-light: #1e293b;
+    --highlight: #0c1e2e;
+    --tag-bg: #164e63;
+    --tag-fg: #67e8f9;
+    --hero-bg: #020617;
+    --hero-fg: #e8edf5;
+    --hero-accent: #22d3ee;
+    --section-alt: #1a2236;
+    --copy-bg: rgba(255,255,255,0.06);
+    --copy-hover: rgba(255,255,255,0.12);
+    --nav-bg: rgba(2, 6, 23, 0.95);
+    --nav-fg: #e0e6f0;
+    --glossary-dt: #22d3ee;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f172a;
+  --bg-surface: #1e293b;
+  --bg-code: #020617;
+  --fg: #e2e8f0;
+  --fg-muted: #94a3b8;
+  --fg-code: #e0e6f0;
+  --accent: #22d3ee;
+  --accent-glow: #06b6d4;
+  --accent2: #8b5cf6;
+  --accent2-light: #a78bfa;
+  --border: #334155;
+  --border-light: #1e293b;
+  --highlight: #0c1e2e;
+  --tag-bg: #164e63;
+  --tag-fg: #67e8f9;
+  --hero-bg: #020617;
+  --hero-fg: #e8edf5;
+  --hero-accent: #22d3ee;
+  --section-alt: #1a2236;
+  --copy-bg: rgba(255,255,255,0.06);
+  --copy-hover: rgba(255,255,255,0.12);
+  --nav-bg: rgba(2, 6, 23, 0.95);
+  --nav-fg: #e0e6f0;
+  --glossary-dt: #22d3ee;
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
+  line-height: 1.7;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px);
+  z-index: 100;
+  background: var(--nav-bg);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* Typography */
+h1, h2, h3, h4 {
+  font-family: 'Chakra Petch', 'Arial Narrow', sans-serif;
+  text-wrap: balance;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+h2 { font-size: 1.75rem; font-weight: 700; margin: 0 0 1rem; }
+h3 { font-size: 1.3rem; font-weight: 600; margin: 0 0 0.75rem; }
+h4 { font-size: 1.1rem; font-weight: 600; margin: 0 0 0.5rem; }
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+code, .code-font {
+  font-family: 'Fira Code', 'Cascadia Code', monospace;
+  font-variant-ligatures: none;
+}
+code {
+  background: var(--tag-bg);
+  color: var(--tag-fg);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  font-size: 0.88em;
+}
+
+/* Nav */
+.nav {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 50;
+  background: var(--nav-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin: 0 calc(-1 * max(16px, env(safe-area-inset-left, 0px)));
+  padding: 0 max(16px, env(safe-area-inset-left, 0px));
+}
+.nav-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  height: 52px;
+  overflow-x: auto;
+}
+.nav-brand {
+  font-family: 'Chakra Petch', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--hero-accent);
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+.nav-links {
+  display: flex;
+  gap: 1.25rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.nav-links a {
+  color: var(--nav-fg);
+  font-size: 0.82rem;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0.75;
+  transition: opacity 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-family: 'Chakra Petch', sans-serif;
+}
+.nav-links a:hover { opacity: 1; text-decoration: none; }
+
+/* Hero */
+.hero {
+  background: var(--hero-bg);
+  margin: 0 calc(-1 * max(16px, env(safe-area-inset-left, 0px)));
+  padding: 4rem max(16px, env(safe-area-inset-left, 0px)) 3.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.hero-grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.06;
+  background-image:
+    linear-gradient(rgba(34,211,238,0.5) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34,211,238,0.5) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+.hero-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+.hero-eyebrow {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--hero-accent);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.hero-eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 24px;
+  height: 2px;
+  background: var(--hero-accent);
+}
+.hero h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+  color: var(--hero-fg);
+  margin: 0 0 1rem;
+  font-weight: 700;
+  max-width: 700px;
+}
+.hero-sub {
+  color: rgba(232,237,245,0.65);
+  font-size: 1.05rem;
+  max-width: 560px;
+  line-height: 1.6;
+}
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.75rem;
+  background: rgba(34,211,238,0.1);
+  border: 1px solid rgba(34,211,238,0.2);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: var(--hero-accent);
+  font-family: 'Chakra Petch', sans-serif;
+  font-weight: 500;
+}
+
+/* Content wrapper */
+.content { max-width: 960px; margin: 0 auto; }
+
+/* Sections */
+.section {
+  padding-block: 3rem;
+  border-bottom: 1px solid var(--border-light);
+}
+.section:last-child { border-bottom: none; }
+
+.section-label {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+
+/* Objectives */
+.objectives-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+.obj-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.25rem;
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+.obj-num {
+  font-family: 'Chakra Petch', sans-serif;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--accent);
+  line-height: 1;
+  min-width: 2rem;
+  font-variant-numeric: tabular-nums;
+}
+.obj-text {
+  font-size: 0.92rem;
+  color: var(--fg);
+  line-height: 1.5;
+}
+
+/* Info boxes */
+.info-box {
+  background: var(--highlight);
+  border-left: 3px solid var(--accent);
+  padding: 1rem 1.25rem;
+  border-radius: 0 6px 6px 0;
+  margin: 1.25rem 0;
+  font-size: 0.92rem;
+}
+
+/* Instruction tables */
+.table-wrap {
+  overflow-x: auto;
+  margin: 1.25rem 0;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  font-variant-numeric: tabular-nums;
+}
+thead {
+  background: var(--hero-bg);
+  color: var(--hero-fg);
+}
+th {
+  padding: 0.7rem 1rem;
+  text-align: left;
+  font-family: 'Chakra Petch', sans-serif;
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+td {
+  padding: 0.6rem 1rem;
+  border-top: 1px solid var(--border-light);
+}
+tr:nth-child(even) { background: var(--section-alt); }
+td code {
+  font-size: 0.82rem;
+  padding: 0.1em 0.35em;
+}
+
+/* Code blocks */
+.code-block {
+  position: relative;
+  background: var(--bg-code);
+  border-radius: 8px;
+  margin: 1.25rem 0;
+  overflow: hidden;
+}
+.code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 1rem;
+  background: rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.code-lang {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--hero-accent);
+}
+.copy-btn {
+  background: var(--copy-bg);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--fg-code);
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 0.72rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.copy-btn:hover { background: var(--copy-hover); }
+.copy-btn.copied {
+  color: #34d399;
+  border-color: rgba(52,211,153,0.3);
+}
+.code-body {
+  padding: 1rem;
+  overflow-x: auto;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.82rem;
+  line-height: 1.65;
+  color: var(--fg-code);
+  white-space: pre;
+  tab-size: 2;
+}
+.code-body .kw { color: #c792ea; }
+.code-body .ty { color: #82aaff; }
+.code-body .sig { color: #f78c6c; }
+.code-body .cm { color: #546e7a; font-style: italic; }
+.code-body .str { color: #c3e88d; }
+.code-body .op { color: #89ddff; }
+.code-body .num { color: #f78c6c; }
+
+/* SVG diagrams */
+.diagram-wrap {
+  margin: 1.5rem 0;
+  overflow-x: auto;
+  text-align: center;
+}
+.diagram-wrap svg {
+  max-width: 100%;
+  height: auto;
+}
+.diagram-caption {
+  font-size: 0.82rem;
+  color: var(--fg-muted);
+  text-align: center;
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+/* Glossary */
+.glossary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+.glossary-item {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+}
+.glossary-item dt {
+  font-family: 'Chakra Petch', sans-serif;
+  font-weight: 600;
+  color: var(--glossary-dt);
+  font-size: 0.92rem;
+  margin-bottom: 0.25rem;
+}
+.glossary-item dd {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--fg-muted);
+  line-height: 1.5;
+}
+
+/* Two-column layout for subsections */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin: 1.25rem 0;
+}
+@media (max-width: 640px) {
+  .two-col { grid-template-columns: 1fr; }
+}
+.two-col > * { min-width: 0; }
+
+/* Feature cards */
+.feature-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.25rem;
+}
+.feature-card h4 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.feature-icon {
+  width: 28px;
+  height: 28px;
+  background: var(--tag-bg);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.feature-icon svg { width: 16px; height: 16px; }
+
+/* Signal list */
+.signal-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.signal-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+}
+.signal-name {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.82rem;
+  color: var(--accent2);
+  font-weight: 500;
+  min-width: 80px;
+}
+
+/* Tabs for EC-1/EC-2 */
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 1.5rem;
+}
+.tab-btn {
+  font-family: 'Chakra Petch', sans-serif;
+  font-weight: 600;
+  font-size: 0.88rem;
+  padding: 0.7rem 1.25rem;
+  background: none;
+  border: none;
+  color: var(--fg-muted);
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.tab-btn:hover { color: var(--fg); }
+.tab-btn.active {
+  color: var(--accent);
+}
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent);
+}
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* State diagram custom */
+.state-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1rem 0;
+  align-items: center;
+}
+.state-badge {
+  font-family: 'Chakra Petch', sans-serif;
+  font-weight: 600;
+  font-size: 0.78rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  border: 2px solid var(--accent);
+  color: var(--accent);
+  white-space: nowrap;
+}
+.state-arrow {
+  color: var(--fg-muted);
+  font-size: 1.1rem;
+}
+
+/* Equation block */
+.equation {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin: 1rem 0;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.85rem;
+  line-height: 1.8;
+  overflow-x: auto;
+  white-space: pre-wrap;
+}
+
+/* Equation box with title */
+.eq-box {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin: 1.25rem 0;
+}
+.eq-box-title {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent2);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.eq-box-title::before {
+  content: '';
+  display: inline-block;
+  width: 16px;
+  height: 2px;
+  background: var(--accent2);
+}
+.eq-content {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.84rem;
+  line-height: 2;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  color: var(--fg);
+}
+
+/* Checklist */
+.checklist {
+  list-style: none;
+  padding: 0;
+  margin: 1.25rem 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0.5rem;
+}
+.checklist li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-size: 0.92rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+}
+.checklist li::before {
+  content: '';
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  border-radius: 4px;
+  background: var(--accent);
+  margin-top: 2px;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E");
+  background-size: 14px 14px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Problem cards */
+.problem-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1.25rem 0;
+}
+.problem-num {
+  font-family: 'Chakra Petch', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--accent2);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.problem-num::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent2);
+}
+.problem-text {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  margin-bottom: 0.75rem;
+}
+.problem-parts {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.problem-parts li {
+  font-size: 0.88rem;
+  padding: 0.4rem 0.75rem;
+  background: var(--highlight);
+  border-radius: 4px;
+  display: flex;
+  gap: 0.5rem;
+}
+.part-label {
+  font-family: 'Chakra Petch', sans-serif;
+  font-weight: 600;
+  color: var(--accent);
+  min-width: 1.5rem;
+}
+
+/* Footer */
+.footer {
+  margin: 0 calc(-1 * max(16px, env(safe-area-inset-left, 0px)));
+  padding: 2rem max(16px, env(safe-area-inset-left, 0px));
+  background: var(--hero-bg);
+  color: rgba(232,237,245,0.5);
+  font-size: 0.82rem;
+  text-align: center;
+}
+.footer a { color: var(--hero-accent); }
+
+/* Scroll to top */
+.scroll-top {
+  position: fixed;
+  bottom: 1.5rem;
+  right: max(1.5rem, env(safe-area-inset-right, 0px));
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  z-index: 40;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.scroll-top.visible { opacity: 1; pointer-events: auto; }
+.scroll-top svg { width: 20px; height: 20px; }
+
+@media (max-width: 640px) {
+  .hero { padding: 3rem max(16px, env(safe-area-inset-left, 0px)) 2.5rem; }
+  .hero h1 { font-size: 1.75rem; }
+  .nav-links { display: none; }
+  h2 { font-size: 1.4rem; }
+  .section { padding-block: 2rem; }
+}
+
+@media print {
+  .nav, .scroll-top, .copy-btn { display: none !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+
+/* Figure images from textbook */
+.figure-container {
+  margin: 1.5rem 0;
+  text-align: center;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.25rem;
+  overflow: hidden;
+}
+.figure-container img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+}
+.figure-container .fig-caption {
+  font-size: 0.85rem;
+  color: var(--fg-muted);
+  margin-top: 0.75rem;
+  font-style: italic;
+  line-height: 1.5;
+}
+.hero-figure {
+  margin-top: 2rem;
+  text-align: center;
+}
+.hero-figure img {
+  max-width: 320px;
+  height: auto;
+  opacity: 0.85;
+  filter: drop-shadow(0 4px 20px rgba(34,211,238,0.3));
+}
+</style>
+
+<!-- Navigation -->
+<nav class="nav" aria-label="Navegación principal">
+  <div class="nav-inner">
+    <span class="nav-brand">μProc Lab</span>
+    <ul class="nav-links">
+      <li><a href="#objetivos">Objetivos</a></li>
+      <li><a href="#arquitectura">Arquitectura</a></li>
+      <li><a href="#procesadores">EC-1 / EC-2</a></li>
+      <li><a href="#vhdl">Código VHDL</a></li>
+      <li><a href="#programas">Programas</a></li>
+      <li><a href="#resumen">Resumen</a></li>
+      <li><a href="#problemas">Problemas</a></li>
+      <li><a href="#glosario">Glosario</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- Hero -->
+<header class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Capítulo 12 — Diseño Digital con VHDL</div>
+    <h1>Microprocesadores de Propósito General</h1>
+    <p class="hero-sub">Diseño completo de dos microprocesadores educativos — desde la arquitectura del conjunto de instrucciones hasta la implementación en hardware con VHDL.</p>
+    <div class="hero-meta">
+      <span class="hero-tag">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6m-6 3h4"/></svg>
+        EC-1: 5 instrucciones
+      </span>
+      <span class="hero-tag">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6m-6 3h6m-6 3h4"/></svg>
+        EC-2: 8 instrucciones
+      </span>
+      <span class="hero-tag">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/><circle cx="12" cy="12" r="3"/></svg>
+        VHDL &amp; FPGA
+      </span>
+    </div>
+  
+    <div class="hero-figure">
+      <img src="img/Ilustracion_portada.png" alt="Diagrama de microprocesador" loading="lazy">
+    </div>
+  </div>
+</header>
+
+<div class="content">
+
+  <!-- OBJETIVOS -->
+  <section class="section" id="objetivos">
+    <div class="section-label">Objetivos de Aprendizaje</div>
+    <h2>¿Qué aprenderás en este capítulo?</h2>
+    <div class="objectives-grid">
+      <div class="obj-card">
+        <span class="obj-num">01</span>
+        <span class="obj-text">Comprender la arquitectura CPU = Unidad de Control + Ruta de Datos y el ciclo de instrucción Fetch → Decode → Execute.</span>
+      </div>
+      <div class="obj-card">
+        <span class="obj-num">02</span>
+        <span class="obj-text">Diseñar el conjunto de instrucciones (ISA) para microprocesadores simples con codificación de opcode.</span>
+      </div>
+      <div class="obj-card">
+        <span class="obj-num">03</span>
+        <span class="obj-text">Construir la ruta de datos (datapath) con registros, ALU, multiplexores, contadores de programa y buses.</span>
+      </div>
+      <div class="obj-card">
+        <span class="obj-num">04</span>
+        <span class="obj-text">Diseñar la unidad de control como una máquina de estados finitos (FSM) con tablas de próximo estado.</span>
+      </div>
+      <div class="obj-card">
+        <span class="obj-num">05</span>
+        <span class="obj-text">Implementar microprocesadores completos en VHDL usando modelos estructurales (FSM+D) y conductuales (FSMD).</span>
+      </div>
+      <div class="obj-card">
+        <span class="obj-num">06</span>
+        <span class="obj-text">Sintetizar y verificar el diseño en hardware real usando la tarjeta de desarrollo UP2 con FPGA FLEX.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ARQUITECTURA CPU -->
+  <section class="section" id="arquitectura">
+    <div class="section-label">Fundamentos</div>
+    <h2>Arquitectura de un Microprocesador</h2>
+    <p>Un microprocesador de propósito general es un procesador que ejecuta instrucciones almacenadas en memoria. A diferencia de los circuitos dedicados, el programa determina la función del procesador. La CPU se compone de dos bloques fundamentales:</p>
+
+    <div class="two-col">
+      <div class="feature-card">
+        <h4>
+          <span class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          </span>
+          Unidad de Control (CU)
+        </h4>
+        <p style="font-size:0.9rem;color:var(--fg-muted);margin:0.5rem 0 0">Genera las señales de control que dirigen la operación de la ruta de datos. Implementada como una máquina de estados finitos (FSM) que atraviesa los estados del ciclo de instrucción.</p>
+      </div>
+      <div class="feature-card">
+        <h4>
+          <span class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent2)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>
+          </span>
+          Ruta de Datos (Datapath)
+        </h4>
+        <p style="font-size:0.9rem;color:var(--fg-muted);margin:0.5rem 0 0">Contiene los componentes funcionales: registros, ALU, multiplexores, contador de programa (PC), registro de instrucción (IR) y buses de interconexión.</p>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <strong>Ciclo de instrucción:</strong> Toda instrucción sigue tres fases — <strong>Fetch</strong> (leer instrucción de memoria), <strong>Decode</strong> (decodificar el opcode e identificar la operación), y <strong>Execute</strong> (ejecutar la operación sobre los datos). La unidad de control gestiona estas fases como estados de una FSM.
+    </div>
+
+    <div class="figure-container">
+      <img src="img/Figura_12-01.png" alt="Figura 12.1 del libro" loading="lazy">
+      <div class="fig-caption">Figura 12.1 — Diagrama de bloques de un microprocesador de propósito general (del libro de texto)</div>
+    </div>
+  </section>
+
+  <!-- EC-1 y EC-2 con tabs -->
+  <section class="section" id="procesadores">
+    <div class="section-label">Diseño de Microprocesadores</div>
+    <h2>Microprocesadores EC-1 y EC-2</h2>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="ec1" id="tab-ec1">EC-1 — Básico</button>
+      <button class="tab-btn" data-tab="ec2" id="tab-ec2">EC-2 — Avanzado</button>
+    </div>
+
+    <!-- ============ EC-1 PANEL ============ -->
+    <div class="tab-panel active" id="panel-ec1">
+      <h3>EC-1: Microprocesador de 5 instrucciones</h3>
+      <p>El EC-1 es el primer microprocesador educativo. Utiliza instrucciones de 8 bits con un opcode de 3 bits y una dirección de 4 bits (bit 4 no utilizado). Usa una ROM de 16×8 como memoria de programa y un registro acumulador A de 8 bits.</p>
+
+      <h4>Conjunto de Instrucciones (ISA)</h4>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Instrucción</th><th>Opcode</th><th>Codificación</th><th>Operación</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>IN A</code></td><td>000</td><td><code>000x xxxx</code></td><td>Lee entrada y almacena en A</td></tr>
+            <tr><td><code>OUT A</code></td><td>001</td><td><code>001x xxxx</code></td><td>Envía contenido de A a la salida</td></tr>
+            <tr><td><code>DEC A</code></td><td>010</td><td><code>010x xxxx</code></td><td>Decrementa A en 1: A ← A − 1</td></tr>
+            <tr><td><code>JNZ dirección</code></td><td>011</td><td><code>011x aaaa</code></td><td>Salta a dirección si A ≠ 0</td></tr>
+            <tr><td><code>HALT</code></td><td>100</td><td><code>100x xxxx</code></td><td>Detiene la ejecución</td></tr>
+          </tbody>
+        </table>
+      </div>
+    <div class="figure-container">
+      <img src="img/Figura_12-02.png" alt="Figura 12.2 - EC-1 ISA" loading="lazy">
+      <div class="fig-caption">Figura 12.2 — Conjunto de instrucciones del EC-1 (del libro de texto)</div>
+    </div>
+
+      <h4>Señales de Control y Estado</h4>
+      <div class="two-col">
+        <div class="feature-card">
+          <h4 style="color:var(--accent);font-size:0.9rem">Señales de Control (5)</h4>
+          <ul class="signal-list">
+            <li><span class="signal-name">IRload</span> Carga el registro de instrucción</li>
+            <li><span class="signal-name">PCload</span> Carga el contador de programa</li>
+            <li><span class="signal-name">INmux</span> Selecciona fuente del mux de entrada</li>
+            <li><span class="signal-name">Aload</span> Carga el acumulador A</li>
+            <li><span class="signal-name">JNZmux</span> Selecciona fuente para salto condicional</li>
+          </ul>
+        </div>
+        <div class="feature-card">
+          <h4 style="color:var(--accent2);font-size:0.9rem">Señales de Estado (1)</h4>
+          <ul class="signal-list">
+            <li><span class="signal-name">Aneq0</span> Vale 1 cuando A ≠ 0</li>
+          </ul>
+          <div style="margin-top:1rem;padding-top:0.75rem;border-top:1px solid var(--border)">
+            <h4 style="font-size:0.85rem;color:var(--fg-muted)">Especificaciones</h4>
+            <ul class="signal-list">
+              <li><span class="signal-name">Memoria</span> ROM 16×8 bits</li>
+              <li><span class="signal-name">PC</span> Contador de 4 bits</li>
+              <li><span class="signal-name">IR</span> Registro de 8 bits</li>
+              <li><span class="signal-name">A</span> Acumulador de 8 bits</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- EC-1 Datapath SVG -->
+      <h4>Diagrama de la Ruta de Datos del EC-1</h4>
+    <div class="figure-container">
+      <img src="img/Figura_12-03.png" alt="Figura 12.3 - EC-1 Datapath" loading="lazy">
+      <div class="fig-caption">Figura 12.3 — Circuito de la ruta de datos del EC-1 (del libro de texto)</div>
+    </div>
+
+      <!-- EC-1 State Diagram -->
+      <h4>Diagrama de Estados de la Unidad de Control</h4>
+      <p>La FSM del EC-1 tiene 8 estados. Comienza en el estado de reset, pasa a fetch, luego a decode, y según el opcode ejecuta la instrucción correspondiente.</p>
+    <div class="figure-container">
+      <img src="img/Figura_12-04.png" alt="Figura 12.4 - EC-1 Control Unit" loading="lazy">
+      <div class="fig-caption">Figura 12.4 — Unidad de control del EC-1: (a) diagrama de estados, (b) tabla de próximo estado, (c) ecuaciones de excitación, (d) tabla de control, (e) ecuaciones de salida, (f) circuito (del libro de texto)</div>
+    </div>
+
+      <!-- EC-1 Control Word Table -->
+      <h4>Tabla de Palabra de Control</h4>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Estado</th><th>IRload</th><th>PCload</th><th>INmux</th><th>Aload</th><th>JNZmux</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>s0 (Start)</td><td>0</td><td>0</td><td>x</td><td>0</td><td>x</td></tr>
+            <tr><td>s1 (Fetch)</td><td>1</td><td>0</td><td>x</td><td>0</td><td>x</td></tr>
+            <tr><td>s2 (Decode)</td><td>0</td><td>1</td><td>x</td><td>0</td><td>0</td></tr>
+            <tr><td>s3 (IN A)</td><td>0</td><td>0</td><td>0</td><td>1</td><td>x</td></tr>
+            <tr><td>s4 (OUT A)</td><td>0</td><td>0</td><td>x</td><td>0</td><td>x</td></tr>
+            <tr><td>s5 (DEC A)</td><td>0</td><td>0</td><td>1</td><td>1</td><td>x</td></tr>
+            <tr><td>s6 (JNZ)</td><td>0</td><td>Aneq0</td><td>x</td><td>0</td><td>1</td></tr>
+            <tr><td>s7 (HALT)</td><td>0</td><td>0</td><td>x</td><td>0</td><td>x</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ===== NEW: EC-1 Next-State Table ===== -->
+      <h4>Tabla de Próximo Estado e Implementación</h4>
+      <p>La unidad de control se implementa con 3 flip-flops tipo D (Q₂Q₁Q₀) para codificar los 8 estados. La siguiente tabla muestra el estado actual, el próximo estado según las condiciones del opcode (IR₇, IR₆, IR₅), y los valores de entrada D₂, D₁, D₀ de los flip-flops.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Estado Actual</th><th>Q₂Q₁Q₀</th><th>Condición</th><th>Próximo Estado</th><th>D₂D₁D₀</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>s0 (Start)</td><td>000</td><td>Siempre</td><td>s1 (Fetch)</td><td>001</td></tr>
+            <tr><td>s1 (Fetch)</td><td>001</td><td>Siempre</td><td>s2 (Decode)</td><td>010</td></tr>
+            <tr><td rowspan="5">s2 (Decode)</td><td rowspan="5">010</td><td>IR = 000 (IN)</td><td>s3 (IN A)</td><td>011</td></tr>
+            <tr><td>IR = 001 (OUT)</td><td>s4 (OUT A)</td><td>100</td></tr>
+            <tr><td>IR = 010 (DEC)</td><td>s5 (DEC A)</td><td>101</td></tr>
+            <tr><td>IR = 011 (JNZ)</td><td>s6 (JNZ)</td><td>110</td></tr>
+            <tr><td>IR = 100 (HALT)</td><td>s7 (HALT)</td><td>111</td></tr>
+            <tr><td>s3 (IN A)</td><td>011</td><td>Siempre</td><td>s1 (Fetch)</td><td>001</td></tr>
+            <tr><td>s4 (OUT A)</td><td>100</td><td>Siempre</td><td>s1 (Fetch)</td><td>001</td></tr>
+            <tr><td>s5 (DEC A)</td><td>101</td><td>Siempre</td><td>s1 (Fetch)</td><td>001</td></tr>
+            <tr><td>s6 (JNZ)</td><td>110</td><td>Siempre</td><td>s1 (Fetch)</td><td>001</td></tr>
+            <tr><td>s7 (HALT)</td><td>111</td><td>Siempre</td><td>s7 (HALT)</td><td>111</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- EC-1 Excitation Equations -->
+      <div class="eq-box">
+        <div class="eq-box-title">Ecuaciones de Excitación (Flip-Flops D)</div>
+        <div class="eq-content">D₂ = Q₂Q₁Q₀ + Q₂'Q₁Q₀'·IR₇
+D₁ = Q₂Q₁Q₀ + Q₂'Q₁Q₀'·(IR₆·IR₅ + IR₇·IR₆) + Q₂'Q₁'Q₀
+D₀ = Q₂Q₁Q₀ + Q₂'Q₁Q₀'·(IR₆·IR₅ + IR₇·IR₅) + Q₂'Q₁'Q₀'</div>
+      </div>
+
+      <!-- EC-1 Output Equations -->
+      <div class="eq-box">
+        <div class="eq-box-title">Ecuaciones de Salida (Señales de Control)</div>
+        <div class="eq-content">IRload  = Q₂'Q₁'Q₀
+PCload  = Q₂'Q₁'Q₀ + Q₂Q₁Q₀'·(Aneq0)
+INmux   = Q₂'Q₁Q₀
+Aload   = Q₂'Q₁Q₀ + Q₂Q₁'Q₀
+JNZmux  = Q₂Q₁Q₀'
+Halt    = Q₂Q₁Q₀</div>
+      </div>
+
+      <!-- EC-1 Complete Circuit & Simulation -->
+      <h4>Circuito Completo y Simulación</h4>
+      <p>El circuito completo del EC-1 se obtiene conectando el módulo de la unidad de control (construido con 3 flip-flops D y la lógica combinacional de las ecuaciones de excitación y salida) con el módulo de la ruta de datos (PC, ROM, IR, MUXes, decrementador y acumulador A). Las señales de control fluyen de la CU al datapath y la señal de estado <code>Aneq0</code> fluye de vuelta.</p>
+    <div class="figure-container">
+      <img src="img/Figura_12-05.png" alt="Figura 12.5 - EC-1 Complete Circuit" loading="lazy">
+      <div class="fig-caption">Figura 12.5 — Circuito completo del EC-1: Unidad de Control + Ruta de Datos (del libro de texto)</div>
+    </div>
+      <p>La simulación del programa de cuenta regresiva con entrada N=3 muestra la siguiente traza: el procesador lee 3, muestra 3, decrementa a 2, muestra 2, decrementa a 1, muestra 1, decrementa a 0, y finalmente ejecuta HALT al detectar A=0 en la instrucción JNZ.</p>
+
+      <!-- EC-1 Hardware Implementation -->
+      <h4>Implementación en Hardware (Tarjeta UP2)</h4>
+      <div class="info-box">
+        <strong>Plataforma:</strong> La computadora EC-1 se implementa en la tarjeta de desarrollo UP2 de Altera con FPGA FLEX EPF10K70. Los componentes de interfaz son:
+      </div>
+      <div class="two-col">
+        <div class="feature-card">
+          <h4 style="font-size:0.9rem">Entrada / Salida</h4>
+          <ul class="signal-list">
+            <li><span class="signal-name">Entrada</span> 8 interruptores DIP</li>
+            <li><span class="signal-name">Salida</span> 2 displays LED de 7 segmentos</li>
+            <li><span class="signal-name">Reset</span> Botón FLEX_PB1</li>
+          </ul>
+        </div>
+        <div class="feature-card">
+          <h4 style="font-size:0.9rem">Circuitos Auxiliares</h4>
+          <ul class="signal-list">
+            <li><span class="signal-name">BCD Decoder</span> Convierte binario a 2 dígitos BCD para LEDs</li>
+            <li><span class="signal-name">Clock Div</span> Divisor de reloj: 25.175 MHz → ~4 Hz</li>
+            <li><span class="signal-name">MIF</span> Archivo PROGRAM.MIF cargado en ROM</li>
+          </ul>
+        </div>
+      </div>
+    <div class="figure-container">
+      <img src="img/Figura_12-09.png" alt="Figura 12.9 - EC-1 Hardware Implementation" loading="lazy">
+      <div class="fig-caption">Figura 12.9 — Implementación hardware del EC-1 en la tarjeta UP2 con FPGA FLEX (del libro de texto)</div>
+    </div>
+
+      <!-- EC-1 Sample Program: Countdown -->
+      <h4>Programa de Ejemplo: Cuenta Regresiva</h4>
+      <p>Este programa lee un número de la entrada, muestra su valor, lo decrementa y repite hasta llegar a cero.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Ensamblador EC-1</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+        </div>
+        <pre class="code-body"><span class="cm">-- Programa: Cuenta Regresiva</span>
+<span class="cm">-- Lee un número N y muestra N, N-1, N-2, ..., 1, 0</span>
+
+<span class="num">0:</span>  <span class="kw">IN</span>   A          <span class="cm">-- Leer valor de entrada en A</span>
+<span class="num">1:</span>  <span class="kw">OUT</span>  A          <span class="cm">-- Mostrar valor actual de A</span>
+<span class="num">2:</span>  <span class="kw">DEC</span>  A          <span class="cm">-- Decrementar A: A ← A - 1</span>
+<span class="num">3:</span>  <span class="kw">JNZ</span>  <span class="num">1</span>          <span class="cm">-- Si A ≠ 0, saltar a dirección 1</span>
+<span class="num">4:</span>  <span class="kw">HALT</span>            <span class="cm">-- Fin del programa</span></pre>
+      </div>
+    <div class="figure-container">
+      <img src="img/Figura_12-06.png" alt="Figura 12.6 - EC-1 Countdown Program" loading="lazy">
+      <div class="fig-caption">Figura 12.6 — Programa de cuenta regresiva del EC-1: (a) código ensamblador, (b) código binario (del libro de texto)</div>
+    </div>
+
+      <h4>Archivo PROGRAM.MIF para el EC-1</h4>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">MIF — Memory Initialization File</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+        </div>
+        <pre class="code-body"><span class="cm">-- Programa Cuenta Regresiva para EC-1</span>
+<span class="kw">DEPTH</span> = <span class="num">16</span>;
+<span class="kw">WIDTH</span> = <span class="num">8</span>;
+<span class="kw">ADDRESS_RADIX</span> = <span class="str">HEX</span>;
+<span class="kw">DATA_RADIX</span> = <span class="str">BIN</span>;
+
+<span class="kw">CONTENT</span>
+<span class="kw">BEGIN</span>
+  <span class="num">0</span> : <span class="str">00000000</span>;   <span class="cm">-- IN A</span>
+  <span class="num">1</span> : <span class="str">00100000</span>;   <span class="cm">-- OUT A</span>
+  <span class="num">2</span> : <span class="str">01000000</span>;   <span class="cm">-- DEC A</span>
+  <span class="num">3</span> : <span class="str">01100001</span>;   <span class="cm">-- JNZ 1</span>
+  <span class="num">4</span> : <span class="str">10000000</span>;   <span class="cm">-- HALT</span>
+<span class="kw">END</span>;</pre>
+      </div>
+    <div class="figure-container">
+      <img src="img/Figura_12-07.png" alt="Figura 12.7 - EC-1 MIF File" loading="lazy">
+      <div class="fig-caption">Figura 12.7 — Archivo PROGRAM.MIF del EC-1 para el programa de cuenta regresiva (del libro de texto)</div>
+    </div>
+    <div class="figure-container">
+      <img src="img/Figura_12-08.png" alt="Figura 12.8 - EC-1 Simulation Trace" loading="lazy">
+      <div class="fig-caption">Figura 12.8 — Traza de simulación del EC-1 ejecutando la cuenta regresiva desde 3 (del libro de texto)</div>
+    </div>
+    </div>
+
+    <!-- ============ EC-2 PANEL ============ -->
+    <div class="tab-panel" id="panel-ec2">
+      <h3>EC-2: Microprocesador de 8 instrucciones</h3>
+      <p>El EC-2 amplía el EC-1 con operaciones de memoria (LOAD/STORE), aritmética (ADD/SUB) y saltos condicionales mejorados (JZ/JPOS). Usa RAM de 32×8 bits (lectura y escritura), un PC de 5 bits y un acumulador A de 8 bits con resta por complemento a dos.</p>
+
+      <h4>Conjunto de Instrucciones (ISA)</h4>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Instrucción</th><th>Opcode</th><th>Codificación</th><th>Operación</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>LOAD dirección</code></td><td>000</td><td><code>000a aaaa</code></td><td>A ← Memoria[dirección]</td></tr>
+            <tr><td><code>STORE dirección</code></td><td>001</td><td><code>001a aaaa</code></td><td>Memoria[dirección] ← A</td></tr>
+            <tr><td><code>ADD dirección</code></td><td>010</td><td><code>010a aaaa</code></td><td>A ← A + Memoria[dirección]</td></tr>
+            <tr><td><code>SUB dirección</code></td><td>011</td><td><code>011a aaaa</code></td><td>A ← A − Memoria[dirección]</td></tr>
+            <tr><td><code>IN A</code></td><td>100</td><td><code>100x xxxx</code></td><td>A ← Entrada</td></tr>
+            <tr><td><code>JZ dirección</code></td><td>101</td><td><code>101a aaaa</code></td><td>Si A = 0, PC ← dirección</td></tr>
+            <tr><td><code>JPOS dirección</code></td><td>110</td><td><code>110a aaaa</code></td><td>Si A > 0, PC ← dirección</td></tr>
+            <tr><td><code>HALT</code></td><td>111</td><td><code>111x xxxx</code></td><td>Detiene la ejecución</td></tr>
+          </tbody>
+        </table>
+      </div>
+    <div class="figure-container">
+      <img src="img/Figura_12-10.png" alt="Figura 12.10 - EC-2 ISA" loading="lazy">
+      <div class="fig-caption">Figura 12.10 — Conjunto de instrucciones del EC-2 (del libro de texto)</div>
+    </div>
+
+      <h4>Señales de Control y Estado</h4>
+      <div class="two-col">
+        <div class="feature-card">
+          <h4 style="color:var(--accent);font-size:0.9rem">Señales de Control (8)</h4>
+          <ul class="signal-list">
+            <li><span class="signal-name">IRload</span> Carga registro de instrucción</li>
+            <li><span class="signal-name">JMPmux</span> Selecciona fuente de salto</li>
+            <li><span class="signal-name">PCload</span> Carga el PC</li>
+            <li><span class="signal-name">Meminst</span> Inst. de memoria activa</li>
+            <li><span class="signal-name">MemWr</span> Escritura en memoria</li>
+            <li><span class="signal-name">Asel[1:0]</span> Selección fuente de A (2 bits)</li>
+            <li><span class="signal-name">Aload</span> Carga el acumulador</li>
+            <li><span class="signal-name">Sub</span> Selecciona resta en la ALU</li>
+          </ul>
+        </div>
+        <div class="feature-card">
+          <h4 style="color:var(--accent2);font-size:0.9rem">Señales de Estado (2)</h4>
+          <ul class="signal-list">
+            <li><span class="signal-name">Aeq0</span> Vale 1 cuando A = 0</li>
+            <li><span class="signal-name">Apos</span> Vale 1 cuando A > 0 (bit 7 = 0, A ≠ 0)</li>
+          </ul>
+          <div style="margin-top:1rem;padding-top:0.75rem;border-top:1px solid var(--border)">
+            <h4 style="font-size:0.85rem;color:var(--fg-muted)">Especificaciones</h4>
+            <ul class="signal-list">
+              <li><span class="signal-name">Memoria</span> RAM 32×8 bits</li>
+              <li><span class="signal-name">PC</span> Contador de 5 bits</li>
+              <li><span class="signal-name">IR</span> Registro de 8 bits</li>
+              <li><span class="signal-name">A</span> Acumulador de 8 bits</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- EC-2 Datapath SVG -->
+      <h4>Diagrama de la Ruta de Datos del EC-2</h4>
+    <div class="figure-container">
+      <img src="img/Figura_12-11.png" alt="Figura 12.11 - EC-2 Datapath" loading="lazy">
+      <div class="fig-caption">Figura 12.11 — Circuito de la ruta de datos del EC-2 con MUX 4-a-1, unidad de suma/resta y RAM 32×8 (del libro de texto)</div>
+    </div>
+
+      <!-- EC-2 Control Word -->
+      <h4>Tabla de Palabra de Control del EC-2</h4>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Estado</th><th>IRload</th><th>JMPmux</th><th>PCload</th><th>Meminst</th><th>MemWr</th><th>Asel</th><th>Aload</th><th>Sub</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>s0 (Start)</td><td>0</td><td>x</td><td>0</td><td>0</td><td>0</td><td>xx</td><td>0</td><td>x</td></tr>
+            <tr><td>s1 (Fetch)</td><td>1</td><td>x</td><td>0</td><td>0</td><td>0</td><td>xx</td><td>0</td><td>x</td></tr>
+            <tr><td>s2 (Decode)</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>xx</td><td>0</td><td>x</td></tr>
+            <tr><td>s3 (LOAD)</td><td>0</td><td>x</td><td>0</td><td>1</td><td>0</td><td>00</td><td>1</td><td>x</td></tr>
+            <tr><td>s4 (STORE)</td><td>0</td><td>x</td><td>0</td><td>1</td><td>1</td><td>xx</td><td>0</td><td>x</td></tr>
+            <tr><td>s5 (ADD)</td><td>0</td><td>x</td><td>0</td><td>1</td><td>0</td><td>01</td><td>1</td><td>0</td></tr>
+            <tr><td>s6 (SUB)</td><td>0</td><td>x</td><td>0</td><td>1</td><td>0</td><td>01</td><td>1</td><td>1</td></tr>
+            <tr><td>s7 (IN A)</td><td>0</td><td>x</td><td>0</td><td>0</td><td>0</td><td>10</td><td>1</td><td>x</td></tr>
+            <tr><td>s8 (JZ)</td><td>0</td><td>1</td><td>Aeq0</td><td>0</td><td>0</td><td>xx</td><td>0</td><td>x</td></tr>
+            <tr><td>s9 (JPOS)</td><td>0</td><td>1</td><td>Apos</td><td>0</td><td>0</td><td>xx</td><td>0</td><td>x</td></tr>
+            <tr><td>s10 (HALT)</td><td>0</td><td>x</td><td>0</td><td>0</td><td>0</td><td>xx</td><td>0</td><td>x</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ===== NEW: EC-2 Next-State Table ===== -->
+      <h4>Tabla de Próximo Estado e Implementación</h4>
+      <p>La unidad de control del EC-2 requiere 4 flip-flops D (Q₃Q₂Q₁Q₀) para codificar sus 11 estados (s0–s10). La tabla muestra las transiciones y la codificación de los flip-flops.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Estado Actual</th><th>Q₃Q₂Q₁Q₀</th><th>Condición</th><th>Próximo Estado</th><th>D₃D₂D₁D₀</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>s0 (Start)</td><td>0000</td><td>Siempre</td><td>s1 (Fetch)</td><td>0001</td></tr>
+            <tr><td>s1 (Fetch)</td><td>0001</td><td>Siempre</td><td>s2 (Decode)</td><td>0010</td></tr>
+            <tr><td rowspan="8">s2 (Decode)</td><td rowspan="8">0010</td><td>IR = 000 (LOAD)</td><td>s3 (LOAD)</td><td>1000</td></tr>
+            <tr><td>IR = 001 (STORE)</td><td>s4 (STORE)</td><td>1001</td></tr>
+            <tr><td>IR = 010 (ADD)</td><td>s5 (ADD)</td><td>1010</td></tr>
+            <tr><td>IR = 011 (SUB)</td><td>s6 (SUB)</td><td>1011</td></tr>
+            <tr><td>IR = 100 (IN A)</td><td>s7 (IN A)</td><td>1100</td></tr>
+            <tr><td>IR = 101 (JZ)</td><td>s8 (JZ)</td><td>1101</td></tr>
+            <tr><td>IR = 110 (JPOS)</td><td>s9 (JPOS)</td><td>1110</td></tr>
+            <tr><td>IR = 111 (HALT)</td><td>s10 (HALT)</td><td>1111</td></tr>
+            <tr><td>s3 (LOAD)</td><td>1000</td><td>Siempre</td><td>s0 (Start)</td><td>0000</td></tr>
+            <tr><td>s4 (STORE)</td><td>1001</td><td>Siempre</td><td>s0 (Start)</td><td>0000</td></tr>
+            <tr><td>s5 (ADD)</td><td>1010</td><td>Siempre</td><td>s0 (Start)</td><td>0000</td></tr>
+            <tr><td>s6 (SUB)</td><td>1011</td><td>Siempre</td><td>s0 (Start)</td><td>0000</td></tr>
+            <tr><td rowspan="2">s7 (IN A)</td><td rowspan="2">1100</td><td>Enter = 1</td><td>s0 (Start)</td><td>0000</td></tr>
+            <tr><td>Enter = 0</td><td>s7 (IN A)</td><td>1100</td></tr>
+            <tr><td>s8 (JZ)</td><td>1101</td><td>Siempre</td><td>s0 (Start)</td><td>0000</td></tr>
+            <tr><td>s9 (JPOS)</td><td>1110</td><td>Siempre</td><td>s0 (Start)</td><td>0000</td></tr>
+            <tr><td>s10 (HALT)</td><td>1111</td><td>Siempre</td><td>s10 (HALT)</td><td>1111</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- EC-2 Excitation Equations -->
+      <div class="eq-box">
+        <div class="eq-box-title">Ecuaciones de Excitación (4 Flip-Flops D)</div>
+        <div class="eq-content">D₃ = Q₃'Q₂'Q₁Q₀' + Q₃Q₂Q₁'Q₀'·Enter' + Q₃Q₂Q₁Q₀
+D₂ = Q₃'Q₂'Q₁Q₀'·IR₇ + Q₃Q₂Q₁'Q₀'·Enter' + Q₃Q₂Q₁Q₀
+D₁ = Q₃'Q₂'Q₁'Q₀ + Q₃'Q₂'Q₁Q₀'·IR₆ + Q₃Q₂Q₁Q₀
+D₀ = Q₃'Q₂'Q₁Q₀' + Q₃'Q₂'Q₁Q₀'·IR₅ + Q₃Q₂Q₁Q₀</div>
+      </div>
+
+      <!-- EC-2 Output Equations -->
+      <div class="eq-box">
+        <div class="eq-box-title">Ecuaciones de Salida (Señales de Control)</div>
+        <div class="eq-content">IRload  = Q₃'Q₂'Q₁'Q₀
+JMPmux  = Q₃Q₂Q₁'Q₀ + Q₃Q₂Q₁Q₀'
+PCload  = Q₃'Q₂'Q₁'Q₀ + Q₃Q₂Q₁'Q₀'·Aeq0 + Q₃Q₂Q₁Q₀'·Apos
+Meminst = Q₃'Q₂'Q₁Q₀' + Q₃'Q₂'Q₁'Q₀
+MemWr   = Q₃Q₂'Q₁'Q₀
+Asel₁   = Q₃Q₂'Q₁'Q₀'
+Asel₀   = Q₃Q₂'Q₁'Q₀'
+Aload   = Q₃Q₁'Q₀' + Q₃Q₂'Q₁
+Sub     = Q₃Q₂'Q₁Q₀
+Halt    = Q₃Q₂Q₁Q₀</div>
+      </div>
+    <div class="figure-container">
+      <img src="img/Figura_12-12.png" alt="Figura 12.12 - EC-2 Control Unit" loading="lazy">
+      <div class="fig-caption">Figura 12.12 — Unidad de control del EC-2: (a) diagrama de estados, (b) tabla de próximo estado, (c) ecuaciones de excitación, (d) tabla de control, (e) ecuaciones de salida, (f) circuito (del libro de texto)</div>
+    </div>
+
+      <!-- EC-2 Hardware Implementation -->
+      <h4>Implementación en Hardware (Tarjeta UP2)</h4>
+      <div class="info-box">
+        <strong>Diferencias con EC-1:</strong> El EC-2 utiliza RAM en lugar de ROM, lo que permite operaciones de escritura (STORE). Además, la instrucción IN A requiere una señal <code>Enter</code> para confirmar la entrada, implementada con un circuito <strong>One-Shot</strong>.
+      </div>
+      <div class="two-col">
+        <div class="feature-card">
+          <h4 style="font-size:0.9rem">Entrada / Salida</h4>
+          <ul class="signal-list">
+            <li><span class="signal-name">Entrada</span> 8 interruptores DIP</li>
+            <li><span class="signal-name">Salida</span> 2 displays LED de 7 segmentos</li>
+            <li><span class="signal-name">Reset</span> Botón FLEX_PB1</li>
+            <li><span class="signal-name">Enter</span> Botón FLEX_PB2 (con One-Shot)</li>
+          </ul>
+        </div>
+        <div class="feature-card">
+          <h4 style="font-size:0.9rem">Circuitos Auxiliares</h4>
+          <ul class="signal-list">
+            <li><span class="signal-name">One-Shot</span> Genera pulso único al presionar Enter</li>
+            <li><span class="signal-name">BCD Decoder</span> Convierte binario a BCD</li>
+            <li><span class="signal-name">Clock Div</span> 25.175 MHz → ~4 Hz</li>
+            <li><span class="signal-name">MIF</span> PROGRAM.MIF cargado en RAM</li>
+          </ul>
+        </div>
+      </div>
+    <div class="figure-container">
+      <img src="img/Figura_12-13.png" alt="Figura 12.13 - EC-2 Complete Circuit" loading="lazy">
+      <div class="fig-caption">Figura 12.13 — Circuito completo del EC-2: Unidad de Control + Ruta de Datos con señal Enter (del libro de texto)</div>
+    </div>
+    <div class="figure-container">
+      <img src="img/Figura_12-15.png" alt="Figura 12.15 - EC-2 Hardware Implementation" loading="lazy">
+      <div class="fig-caption">Figura 12.15 — Implementación hardware del EC-2 en tarjeta UP2 con circuito One-Shot para el botón Enter (del libro de texto)</div>
+    </div>
+
+      <!-- EC-2 Sample Programs -->
+      <h4>Programa de Ejemplo: Máximo Común Divisor (GCD)</h4>
+      <p>Implementación del algoritmo de Euclides para calcular el MCD de dos números usando restas sucesivas.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Ensamblador EC-2</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+        </div>
+        <pre class="code-body"><span class="cm">-- Programa: Máximo Común Divisor (Algoritmo de Euclides)</span>
+<span class="cm">-- Variables: x en dir 11110 (30), y en dir 11111 (31)</span>
+
+<span class="num"> 0:</span>  <span class="kw">IN</span>    A            <span class="cm">-- Leer primer número (x)</span>
+<span class="num"> 1:</span>  <span class="kw">STORE</span> <span class="num">30</span>           <span class="cm">-- Guardar como x</span>
+<span class="num"> 2:</span>  <span class="kw">IN</span>    A            <span class="cm">-- Leer segundo número (y)</span>
+<span class="num"> 3:</span>  <span class="kw">STORE</span> <span class="num">31</span>           <span class="cm">-- Guardar como y</span>
+<span class="cm">-- loop:</span>
+<span class="num"> 4:</span>  <span class="kw">LOAD</span>  <span class="num">30</span>           <span class="cm">-- A ← x</span>
+<span class="num"> 5:</span>  <span class="kw">SUB</span>   <span class="num">31</span>           <span class="cm">-- A ← x - y</span>
+<span class="num"> 6:</span>  <span class="kw">JZ</span>    <span class="num">16</span>           <span class="cm">-- Si x = y → salir (GCD encontrado)</span>
+<span class="num"> 7:</span>  <span class="kw">JPOS</span>  <span class="num">12</span>           <span class="cm">-- Si x > y → ir a x_mayor</span>
+<span class="cm">-- y_mayor: y ← y - x</span>
+<span class="num"> 8:</span>  <span class="kw">LOAD</span>  <span class="num">31</span>           <span class="cm">-- A ← y</span>
+<span class="num"> 9:</span>  <span class="kw">SUB</span>   <span class="num">30</span>           <span class="cm">-- A ← y - x</span>
+<span class="num">10:</span>  <span class="kw">STORE</span> <span class="num">31</span>           <span class="cm">-- y ← resultado</span>
+<span class="num">11:</span>  <span class="kw">JPOS</span>  <span class="num">4</span>            <span class="cm">-- Volver al loop (siempre positivo)</span>
+<span class="cm">-- x_mayor: x ← x - y</span>
+<span class="num">12:</span>  <span class="kw">LOAD</span>  <span class="num">30</span>           <span class="cm">-- A ← x</span>
+<span class="num">13:</span>  <span class="kw">SUB</span>   <span class="num">31</span>           <span class="cm">-- A ← x - y</span>
+<span class="num">14:</span>  <span class="kw">STORE</span> <span class="num">30</span>           <span class="cm">-- x ← resultado</span>
+<span class="num">15:</span>  <span class="kw">JPOS</span>  <span class="num">4</span>            <span class="cm">-- Volver al loop</span>
+<span class="cm">-- salir:</span>
+<span class="num">16:</span>  <span class="kw">LOAD</span>  <span class="num">30</span>           <span class="cm">-- A ← x (= GCD)</span>
+<span class="num">17:</span>  <span class="kw">HALT</span>              <span class="cm">-- Fin — resultado en OUTPUT</span></pre>
+      </div>
+
+      <h4>Archivo PROGRAM.MIF para el EC-2 (GCD)</h4>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">MIF — Memory Initialization File</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+        </div>
+        <pre class="code-body"><span class="cm">-- Programa GCD (Máximo Común Divisor) para EC-2</span>
+<span class="kw">DEPTH</span> = <span class="num">32</span>;
+<span class="kw">WIDTH</span> = <span class="num">8</span>;
+<span class="kw">ADDRESS_RADIX</span> = <span class="str">BIN</span>;
+<span class="kw">DATA_RADIX</span> = <span class="str">BIN</span>;
+
+<span class="kw">CONTENT</span>
+<span class="kw">BEGIN</span>
+  <span class="num">00000</span> : <span class="str">10000000</span>;   <span class="cm">-- 0:  IN A</span>
+  <span class="num">00001</span> : <span class="str">00111110</span>;   <span class="cm">-- 1:  STORE 30</span>
+  <span class="num">00010</span> : <span class="str">10000000</span>;   <span class="cm">-- 2:  IN A</span>
+  <span class="num">00011</span> : <span class="str">00111111</span>;   <span class="cm">-- 3:  STORE 31</span>
+  <span class="num">00100</span> : <span class="str">00011110</span>;   <span class="cm">-- 4:  LOAD 30</span>
+  <span class="num">00101</span> : <span class="str">01111111</span>;   <span class="cm">-- 5:  SUB 31</span>
+  <span class="num">00110</span> : <span class="str">10110000</span>;   <span class="cm">-- 6:  JZ 16</span>
+  <span class="num">00111</span> : <span class="str">11001100</span>;   <span class="cm">-- 7:  JPOS 12</span>
+  <span class="num">01000</span> : <span class="str">00011111</span>;   <span class="cm">-- 8:  LOAD 31</span>
+  <span class="num">01001</span> : <span class="str">01111110</span>;   <span class="cm">-- 9:  SUB 30</span>
+  <span class="num">01010</span> : <span class="str">00111111</span>;   <span class="cm">-- 10: STORE 31</span>
+  <span class="num">01011</span> : <span class="str">11000100</span>;   <span class="cm">-- 11: JPOS 4</span>
+  <span class="num">01100</span> : <span class="str">00011110</span>;   <span class="cm">-- 12: LOAD 30</span>
+  <span class="num">01101</span> : <span class="str">01111111</span>;   <span class="cm">-- 13: SUB 31</span>
+  <span class="num">01110</span> : <span class="str">00111110</span>;   <span class="cm">-- 14: STORE 30</span>
+  <span class="num">01111</span> : <span class="str">11000100</span>;   <span class="cm">-- 15: JPOS 4</span>
+  <span class="num">10000</span> : <span class="str">00011110</span>;   <span class="cm">-- 16: LOAD 30 (salir)</span>
+  <span class="num">10001</span> : <span class="str">11100000</span>;   <span class="cm">-- 17: HALT</span>
+<span class="kw">END</span>;</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- VHDL CODE -->
+  <section class="section" id="vhdl">
+    <div class="section-label">Implementación en VHDL</div>
+    <h2>Código VHDL del Microprocesador</h2>
+    <p>Se presentan dos enfoques fundamentales de diseño en VHDL para implementar microprocesadores:</p>
+    <div class="info-box">
+      <strong>🔧 Modelo Conductual (FSMD — Finite State Machine with Datapath):</strong> Todo el microprocesador se describe en un <strong>solo proceso</strong> VHDL. La máquina de estados controla directamente las operaciones de la ruta de datos (registros, ALU, memoria) dentro de cada estado. Es más <strong>fácil de escribir y depurar</strong>, ideal para prototipos rápidos. El sintetizador VHDL infiere automáticamente los componentes hardware necesarios.
+    </div>
+    <div class="info-box" style="margin-top:1rem">
+      <strong>🏗️ Modelo Estructural (FSM+D — FSM + Datapath):</strong> La unidad de control y la ruta de datos se diseñan como <strong>entidades VHDL separadas</strong> y se interconectan mediante señales de control y estado en una entidad de nivel superior. Requiere diseñar primero el circuito manualmente (tablas de estado, ecuaciones), pero produce código que refleja directamente la arquitectura hardware. Es el enfoque que se usa en diseños reales de gran escala.
+    </div>
+    <p style="margin-top:1rem">A continuación se presentan <strong>cinco módulos VHDL</strong> completos: el EC-1 conductual, el EC-2 conductual, la unidad de control del EC-2 (FSM), la ruta de datos del EC-2 (datapath), y el microprocesador EC-2 completo en su versión estructural.</p>
+
+    <h3>EC-1 — Modelo Conductual (FSMD)</h3>
+    <p>En este modelo, un <strong>solo proceso VHDL</strong> describe la máquina de estados completa del EC-1, incluyendo las operaciones de la ruta de datos directamente en los estados de la FSM. El proceso es sensible a <code>clock</code> y <code>reset</code>, e implementa el ciclo completo <strong>Fetch → Decode → Execute</strong>.</p>
+    <p>La memoria ROM de programa se modela como un arreglo constante de 16 posiciones de 8 bits. El Contador de Programa (PC) de 4 bits permite direccionar las 16 posiciones. El Registro de Instrucción (IR) almacena la instrucción leída de ROM, y el campo <code>IR(7 downto 5)</code> se usa como opcode de 3 bits para decodificación.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">VHDL — EC-1 Behavioral</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+      </div>
+      <pre class="code-body"><span class="kw">LIBRARY</span> <span class="ty">ieee</span>;
+<span class="kw">USE</span> <span class="ty">ieee.std_logic_1164</span>.<span class="kw">ALL</span>;
+<span class="kw">USE</span> <span class="ty">ieee.std_logic_unsigned</span>.<span class="kw">ALL</span>;
+
+<span class="kw">ENTITY</span> <span class="ty">ec1</span> <span class="kw">IS</span> <span class="kw">PORT</span>(
+  <span class="sig">clock</span>  : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;
+  <span class="sig">reset</span>  : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;
+  <span class="sig">input</span>  : <span class="kw">IN</span>  <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+  <span class="sig">output</span> : <span class="kw">OUT</span> <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">0</span>)
+);
+<span class="kw">END</span> <span class="ty">ec1</span>;
+
+<span class="kw">ARCHITECTURE</span> <span class="ty">fsmd</span> <span class="kw">OF</span> <span class="ty">ec1</span> <span class="kw">IS</span>
+  <span class="cm">-- Tipo enumerado para los 8 estados de la FSM del EC-1</span>
+  <span class="cm">-- s_start: estado inicial (reset), s_fetch/s_decode: ciclo de instrucción</span>
+  <span class="cm">-- s_in/s_out/s_dec/s_jnz: ejecución de cada instrucción, s_halt: fin</span>
+  <span class="kw">TYPE</span> <span class="ty">state_type</span> <span class="kw">IS</span> (
+    <span class="str">s_start</span>, <span class="str">s_fetch</span>, <span class="str">s_decode</span>,
+    <span class="str">s_in</span>, <span class="str">s_out</span>, <span class="str">s_dec</span>,
+    <span class="str">s_jnz</span>, <span class="str">s_halt</span>
+  );
+  <span class="kw">SIGNAL</span> <span class="sig">state</span> : <span class="ty">state_type</span>;
+
+  <span class="cm">-- Registros internos</span>
+  <span class="kw">SIGNAL</span> <span class="sig">PC</span> : <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">3</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);  <span class="cm">-- Contador de programa</span>
+  <span class="kw">SIGNAL</span> <span class="sig">IR</span> : <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);  <span class="cm">-- Registro de instrucción</span>
+  <span class="kw">SIGNAL</span> <span class="sig">A</span>  : <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);  <span class="cm">-- Acumulador</span>
+
+  <span class="cm">-- ROM: memoria de programa 16×8 (constante, no modificable)</span>
+  <span class="cm">-- Contiene el programa de countdown: IN, OUT, DEC, JNZ 1, HALT</span>
+  <span class="kw">TYPE</span> <span class="ty">rom_type</span> <span class="kw">IS</span> <span class="kw">ARRAY</span>(<span class="num">0</span> <span class="kw">TO</span> <span class="num">15</span>) <span class="kw">OF</span> <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+  <span class="kw">CONSTANT</span> <span class="sig">ROM</span> : <span class="ty">rom_type</span> := (
+    <span class="str">"00000000"</span>,  <span class="cm">-- 0: IN A</span>
+    <span class="str">"00100000"</span>,  <span class="cm">-- 1: OUT A</span>
+    <span class="str">"01000000"</span>,  <span class="cm">-- 2: DEC A</span>
+    <span class="str">"01100001"</span>,  <span class="cm">-- 3: JNZ 1</span>
+    <span class="str">"10000000"</span>,  <span class="cm">-- 4: HALT</span>
+    <span class="kw">OTHERS</span> <span class="op">=></span> <span class="str">"00000000"</span>
+  );
+<span class="kw">BEGIN</span>
+  <span class="kw">PROCESS</span>(<span class="sig">clock</span>, <span class="sig">reset</span>)
+  <span class="kw">BEGIN</span>
+    <span class="kw">IF</span> <span class="sig">reset</span> = <span class="str">'1'</span> <span class="kw">THEN</span>
+      <span class="sig">state</span>  <span class="op">&lt;=</span> <span class="str">s_start</span>;
+      <span class="sig">PC</span>     <span class="op">&lt;=</span> (<span class="kw">OTHERS</span> <span class="op">=></span> <span class="str">'0'</span>);
+      <span class="sig">IR</span>     <span class="op">&lt;=</span> (<span class="kw">OTHERS</span> <span class="op">=></span> <span class="str">'0'</span>);
+      <span class="sig">A</span>      <span class="op">&lt;=</span> (<span class="kw">OTHERS</span> <span class="op">=></span> <span class="str">'0'</span>);
+      <span class="sig">output</span> <span class="op">&lt;=</span> (<span class="kw">OTHERS</span> <span class="op">=></span> <span class="str">'0'</span>);
+    <span class="kw">ELSIF</span> <span class="sig">clock</span><span class="str">'EVENT</span> <span class="kw">AND</span> <span class="sig">clock</span> = <span class="str">'1'</span> <span class="kw">THEN</span>
+      <span class="kw">CASE</span> <span class="sig">state</span> <span class="kw">IS</span>
+        <span class="kw">WHEN</span> <span class="str">s_start</span> <span class="op">=></span>
+          <span class="sig">state</span> <span class="op">&lt;=</span> <span class="str">s_fetch</span>;
+
+        <span class="kw">WHEN</span> <span class="str">s_fetch</span> <span class="op">=></span>
+          <span class="sig">IR</span>    <span class="op">&lt;=</span> <span class="sig">ROM</span>(<span class="kw">CONV_INTEGER</span>(<span class="sig">PC</span>));  <span class="cm">-- Leer instrucción</span>
+          <span class="sig">state</span> <span class="op">&lt;=</span> <span class="str">s_decode</span>;
+
+        <span class="kw">WHEN</span> <span class="str">s_decode</span> <span class="op">=></span>
+          <span class="sig">PC</span> <span class="op">&lt;=</span> <span class="sig">PC</span> + <span class="num">1</span>;                  <span class="cm">-- Incrementar PC</span>
+          <span class="kw">CASE</span> <span class="sig">IR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">5</span>) <span class="kw">IS</span>          <span class="cm">-- Decodificar opcode</span>
+            <span class="kw">WHEN</span> <span class="str">"000"</span> <span class="op">=></span> <span class="sig">state</span> <span class="op">&lt;=</span> <span class="str">s_in</span>;
+            <span class="kw">WHEN</span> <span class="str">"001"</span> <span class="op">=></span> <span class="sig">state</span> <span class="op">&lt;=</span> <span class="str">s_out</span>;
+            <span class="kw">WHEN</span> <span class="str">"010"</span> <span class="op">=></span> <span class="sig">state</span> <span class="op">&lt;=</span> <span class="str">s_dec</span>;
+            <span class="kw">WHEN</span> <span class="str">"011"</span> <span class="op">=></span> <span class="sig">state</span> <span class="op">&lt;=</span> <span class="str">s_jnz</span>;
+            <span class="kw">WHEN</span> <span class="str">"100"</span> <span class="op">=></span> <span class="sig">state</span> <span class="op">&lt;=</span> <span class="str">s_halt</span>;
+            <span class="kw">WHEN</span> <span class="kw">OTHERS</span> <span class="op">=></span> <span class="sig">state</span> <span class="op">&lt;=</span> <span class="str">s_halt</span>;
+          <span class="kw">END</span> <span class="kw">CASE</span>;
+
+        <span class="kw">WHEN</span> <span class="str">s_in</span> <span class="op">=></span>
+          <span class="sig">A</span>     <span class="op">&lt;=</span> <span class="sig">input</span>;               <span class="cm">-- A ← entrada</span>
+          <span class="sig">state</span> <span class="op">&lt;=</span> <span class="str">s_fetch</span>;
+
+        <span class="kw">WHEN</span> <span class="str">s_out</span> <span class="op">=></span>
+          <span class="sig">output</span> <span class="op">&lt;=</span> <span class="sig">A</span>;                <span class="cm">-- Salida ← A</span>
+          <span class="sig">state</span>  <span class="op">&lt;=</span> <span class="str">s_fetch</span>;
+
+        <span class="kw">WHEN</span> <span class="str">s_dec</span> <span class="op">=></span>
+          <span class="sig">A</span>     <span class="op">&lt;=</span> <span class="sig">A</span> - <span class="num">1</span>;               <span class="cm">-- Decrementar A</span>
+          <span class="sig">state</span> <span class="op">&lt;=</span> <span class="str">s_fetch</span>;
+
+        <span class="kw">WHEN</span> <span class="str">s_jnz</span> <span class="op">=></span>
+          <span class="kw">IF</span> <span class="sig">A</span> /= <span class="str">"00000000"</span> <span class="kw">THEN</span>      <span class="cm">-- Si A ≠ 0</span>
+            <span class="sig">PC</span> <span class="op">&lt;=</span> <span class="sig">IR</span>(<span class="num">3</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);      <span class="cm">-- Saltar a dirección</span>
+          <span class="kw">END</span> <span class="kw">IF</span>;
+          <span class="sig">state</span> <span class="op">&lt;=</span> <span class="str">s_fetch</span>;
+
+        <span class="kw">WHEN</span> <span class="str">s_halt</span> <span class="op">=></span>
+          <span class="sig">state</span> <span class="op">&lt;=</span> <span class="str">s_halt</span>;             <span class="cm">-- Permanece detenido</span>
+      <span class="kw">END</span> <span class="kw">CASE</span>;
+    <span class="kw">END</span> <span class="kw">IF</span>;
+  <span class="kw">END</span> <span class="kw">PROCESS</span>;
+<span class="kw">END</span> <span class="ty">fsmd</span>;</pre>
+    </div>
+
+    <h3>EC-2 — Modelo Conductual (FSMD)</h3>
+    <p>El EC-2 extiende significativamente al EC-1: utiliza <strong>RAM de 32×8</strong> en lugar de ROM (permitiendo instrucciones <code>STORE</code>), un PC de 5 bits, y un conjunto de <strong>8 instrucciones</strong> que incluye operaciones aritméticas (<code>ADD</code>, <code>SUB</code>) y saltos condicionales (<code>JZ</code>, <code>JPOS</code>). El modelo conductual encapsula toda esta funcionalidad en un solo proceso secuencial.</p>
+    <p>La señal de entrada <code>input</code> permite al usuario ingresar datos a través de los DIP switches, y <code>output</code> muestra el contenido del acumulador A en los LEDs de 7 segmentos. Las instrucciones de salto evalúan el contenido de A: <code>JZ</code> salta si <code>A = 0</code>, y <code>JPOS</code> salta si A es positivo (bit 7 = 0 y A ≠ 0, interpretación con signo).</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">VHDL — EC-2 Behavioral</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+      </div>
+      <pre class="code-body"><span class="kw">LIBRARY</span> <span class="ty">ieee</span>;
+<span class="kw">USE</span> <span class="ty">ieee.std_logic_1164</span>.<span class="kw">ALL</span>;
+<span class="kw">USE</span> <span class="ty">ieee.std_logic_unsigned</span>.<span class="kw">ALL</span>;
+
+<span class="kw">ENTITY</span> <span class="ty">ec2</span> <span class="kw">IS</span> <span class="kw">PORT</span>(
+  <span class="sig">clock</span>  : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;
+  <span class="sig">reset</span>  : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;
+  <span class="sig">input</span>  : <span class="kw">IN</span>  <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+  <span class="sig">output</span> : <span class="kw">OUT</span> <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">0</span>)
+);
+<span class="kw">END</span> <span class="ty">ec2</span>;
+
+<span class="kw">ARCHITECTURE</span> <span class="ty">fsmd</span> <span class="kw">OF</span> <span class="ty">ec2</span> <span class="kw">IS</span>
+  <span class="cm">-- 11 estados: inicio, fetch/decode, y uno por cada instrucción</span>
+  <span class="kw">TYPE</span> <span class="ty">state_type</span> <span class="kw">IS</span> (
+    <span class="str">s_start</span>, <span class="str">s_fetch</span>, <span class="str">s_decode</span>,
+    <span class="str">s_load</span>, <span class="str">s_store</span>, <span class="str">s_add</span>, <span class="str">s_sub</span>,
+    <span class="str">s_in</span>, <span class="str">s_jz</span>, <span class="str">s_jpos</span>, <span class="str">s_halt</span>
+  );
+  <span class="kw">SIGNAL</span> <span class="sig">state</span> : <span class="ty">state_type</span>;
+
+  <span class="cm">-- Registros internos del procesador</span>
+  <span class="kw">SIGNAL</span> <span class="sig">PC</span> : <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">4</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);  <span class="cm">-- Contador de programa (5 bits → 32 dir.)</span>
+  <span class="kw">SIGNAL</span> <span class="sig">IR</span> : <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);  <span class="cm">-- Registro de instrucción (opcode + operando)</span>
+  <span class="kw">SIGNAL</span> <span class="sig">A</span>  : <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);  <span class="cm">-- Acumulador (único registro de datos)</span>
+
+  <span class="cm">-- RAM: memoria unificada de programa y datos (32×8 bits)</span>
+  <span class="cm">-- En el modelo conductual, se modela como un arreglo de señales</span>
+  <span class="kw">TYPE</span> <span class="ty">ram_type</span> <span class="kw">IS</span> <span class="kw">ARRAY</span>(<span class="num">0</span> <span class="kw">TO</span> <span class="num">31</span>) <span class="kw">OF</span> <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+  <span class="kw">SIGNAL</span> <span class="sig">RAM</span> : <span class="ty">ram_type</span>;
+<span class="kw">BEGIN</span>
+  <span class="kw">PROCESS</span>(<span class="sig">clock</span>, <span class="sig">reset</span>)
+  <span class="kw">BEGIN</span>
+    <span class="kw">IF</span> <span class="sig">reset</span> = <span class="str">'1'</span> <span class="kw">THEN</span>
+      <span class="sig">state</span>  <span class="op">&lt;=</span> <span class="str">s_start</span>;
+      <span class="sig">PC</span>     <span class="op">&lt;=</span> (<span class="kw">OTHERS</span> <span class="op">=></span> <span class="str">'0'</span>);
+      <span class="sig">IR</span>     <span class="op">&lt;=</span> (<span class="kw">OTHERS</span> <span class="op">=></span> <span class="str">'0'</span>);
+      <span class="sig">A</span>      <span class="op">&lt;=</span> (<span class="kw">OTHERS</span> <span class="op">=></span> <span class="str">'0'</span>);
+      <span class="sig">output</span> <span class="op">&lt;=</span> (<span class="kw">OTHERS</span> <span class="op">=></span> <span class="str">'0'</span>);
+    <span class="kw">ELSIF</span> <span class="sig">clock</span><span class="str">'EVENT</span> <span class="kw">AND</span> <span class="sig">clock</span> = <span class="str">'1'</span> <span class="kw">THEN</span>
+      <span class="kw">CASE</span> <span class="sig">state</span> <span class="kw">IS</span>
+        <span class="kw">WHEN</span> <span class="str">s_start</span> <span class="op">=></span>
+          <span class="sig">state</span> <span class="op">&lt;=</span> <span class="str">s_fetch</span>;
+
+        <span class="kw">WHEN</span> <span class="str">s_fetch</span> <span class="op">=></span>                          <span class="cm">-- FETCH: leer instrucción de RAM</span>
+          <span class="sig">IR</span>    <span class="op">&lt;=</span> <span class="sig">RAM</span>(<span class="kw">CONV_INTEGER</span>(<span class="sig">PC</span>));    <span class="cm">-- IR ← RAM[PC]</span>
+          <span class="sig">state</span> <span class="op">&lt;=</span> <span class="str">s_decode</span>;
+
+        <span class="kw">WHEN</span> <span class="str">s_decode</span> <span class="op">=></span>                         <span class="cm">-- DECODE: decodificar y avanzar PC</span>
+          <span class="sig">PC</span> <span class="op">&lt;=</span> <span class="sig">PC</span> + <span class="num">1</span>;                          <span class="cm">-- PC ← PC + 1 (siguiente instrucción)</span>
+          <span class="kw">CASE</span> <span class="sig">IR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">5</span>) <span class="kw">IS</span>                <span class="cm">-- Decodificar opcode (3 bits superiores)</span>
+            <span class="kw">WHEN</span> <span class="str">"000"</span> <span class="op">=></span> <span class="sig">state</span> <span class="op">&lt;=</span> <span class="str">s_load</span>;
+            <span class="kw">WHEN</span> <span class="str">"001"</span> <span class="op">=></span> <span class="sig">state</span> <span class="op">&lt;=</span> <span class="str">s_store</span>;
+            <span class="kw">WHEN</span> <span class="str">"010"</span> <span class="op">=></span> <span class="sig">state</span> <span class="op">&lt;=</span> <span class="str">s_add</span>;
+            <span class="kw">WHEN</span> <span class="str">"011"</span> <span class="op">=></span> <span class="sig">state</span> <span class="op">&lt;=</span> <span class="str">s_sub</span>;
+            <span class="kw">WHEN</span> <span class="str">"100"</span> <span class="op">=></span> <span class="sig">state</span> <span class="op">&lt;=</span> <span class="str">s_in</span>;
+            <span class="kw">WHEN</span> <span class="str">"101"</span> <span class="op">=></span> <span class="sig">state</span> <span class="op">&lt;=</span> <span class="str">s_jz</span>;
+            <span class="kw">WHEN</span> <span class="str">"110"</span> <span class="op">=></span> <span class="sig">state</span> <span class="op">&lt;=</span> <span class="str">s_jpos</span>;
+            <span class="kw">WHEN</span> <span class="kw">OTHERS</span> <span class="op">=></span> <span class="sig">state</span> <span class="op">&lt;=</span> <span class="str">s_halt</span>;
+          <span class="kw">END</span> <span class="kw">CASE</span>;
+
+        <span class="kw">WHEN</span> <span class="str">s_load</span> <span class="op">=></span>                        <span class="cm">-- A ← M[dir]</span>
+          <span class="sig">A</span>     <span class="op">&lt;=</span> <span class="sig">RAM</span>(<span class="kw">CONV_INTEGER</span>(<span class="sig">IR</span>(<span class="num">4</span> <span class="kw">DOWNTO</span> <span class="num">0</span>)));
+          <span class="sig">state</span> <span class="op">&lt;=</span> <span class="str">s_fetch</span>;
+
+        <span class="kw">WHEN</span> <span class="str">s_store</span> <span class="op">=></span>                       <span class="cm">-- M[dir] ← A</span>
+          <span class="sig">RAM</span>(<span class="kw">CONV_INTEGER</span>(<span class="sig">IR</span>(<span class="num">4</span> <span class="kw">DOWNTO</span> <span class="num">0</span>))) <span class="op">&lt;=</span> <span class="sig">A</span>;
+          <span class="sig">state</span> <span class="op">&lt;=</span> <span class="str">s_fetch</span>;
+
+        <span class="kw">WHEN</span> <span class="str">s_add</span> <span class="op">=></span>                         <span class="cm">-- A ← A + M[dir]</span>
+          <span class="sig">A</span>     <span class="op">&lt;=</span> <span class="sig">A</span> + <span class="sig">RAM</span>(<span class="kw">CONV_INTEGER</span>(<span class="sig">IR</span>(<span class="num">4</span> <span class="kw">DOWNTO</span> <span class="num">0</span>)));
+          <span class="sig">state</span> <span class="op">&lt;=</span> <span class="str">s_fetch</span>;
+
+        <span class="kw">WHEN</span> <span class="str">s_sub</span> <span class="op">=></span>                         <span class="cm">-- A ← A - M[dir]</span>
+          <span class="sig">A</span>     <span class="op">&lt;=</span> <span class="sig">A</span> - <span class="sig">RAM</span>(<span class="kw">CONV_INTEGER</span>(<span class="sig">IR</span>(<span class="num">4</span> <span class="kw">DOWNTO</span> <span class="num">0</span>)));
+          <span class="sig">state</span> <span class="op">&lt;=</span> <span class="str">s_fetch</span>;
+
+        <span class="kw">WHEN</span> <span class="str">s_in</span> <span class="op">=></span>                          <span class="cm">-- A ← entrada</span>
+          <span class="sig">A</span>     <span class="op">&lt;=</span> <span class="sig">input</span>;
+          <span class="sig">state</span> <span class="op">&lt;=</span> <span class="str">s_fetch</span>;
+
+        <span class="kw">WHEN</span> <span class="str">s_jz</span> <span class="op">=></span>                          <span class="cm">-- Saltar si A = 0</span>
+          <span class="kw">IF</span> <span class="sig">A</span> = <span class="str">"00000000"</span> <span class="kw">THEN</span>
+            <span class="sig">PC</span> <span class="op">&lt;=</span> <span class="sig">IR</span>(<span class="num">4</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+          <span class="kw">END</span> <span class="kw">IF</span>;
+          <span class="sig">state</span> <span class="op">&lt;=</span> <span class="str">s_fetch</span>;
+
+        <span class="kw">WHEN</span> <span class="str">s_jpos</span> <span class="op">=></span>                        <span class="cm">-- Saltar si A > 0</span>
+          <span class="kw">IF</span> <span class="sig">A</span>(<span class="num">7</span>) = <span class="str">'0'</span> <span class="kw">AND</span> <span class="sig">A</span> /= <span class="str">"00000000"</span> <span class="kw">THEN</span>
+            <span class="sig">PC</span> <span class="op">&lt;=</span> <span class="sig">IR</span>(<span class="num">4</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+          <span class="kw">END</span> <span class="kw">IF</span>;
+          <span class="sig">state</span> <span class="op">&lt;=</span> <span class="str">s_fetch</span>;
+
+        <span class="kw">WHEN</span> <span class="str">s_halt</span> <span class="op">=></span>
+          <span class="sig">state</span> <span class="op">&lt;=</span> <span class="str">s_halt</span>;                  <span class="cm">-- Permanecer detenido</span>
+      <span class="kw">END</span> <span class="kw">CASE</span>;
+    <span class="kw">END</span> <span class="kw">IF</span>;
+  <span class="kw">END</span> <span class="kw">PROCESS</span>;
+<span class="kw">END</span> <span class="ty">fsmd</span>;</pre>
+    </div>
+
+    <div class="info-box">
+      <strong>⚡ FSM+D vs. FSMD — ¿Cuál elegir?</strong> En el modelo <em>estructural</em> (FSM+D), la unidad de control y la ruta de datos se diseñan como entidades VHDL separadas y se conectan mediante señales de control y estado. Esto permite <strong>reutilizar módulos</strong>, facilita la verificación independiente y refleja la arquitectura hardware real. En el modelo <em>conductual</em> (FSMD), todo se describe en un solo proceso, lo que simplifica el código pero dificulta la separación de responsabilidades. <strong>Ambos enfoques producen hardware equivalente tras la síntesis</strong>. En la industria, el modelo estructural se prefiere para procesadores complejos, mientras que el conductual es ideal para prototipado rápido y verificación funcional.
+    </div>
+
+    <!-- EC-2 Structural Control Unit -->
+    <h3>EC-2 — Unidad de Control Estructural (FSM)</h3>
+    <p>En el modelo estructural, la unidad de control se implementa como una <strong>entidad VHDL separada</strong> (<code>cu</code>) que contiene únicamente la lógica de control, sin registros de datos. Recibe como entradas el opcode (<code>IR(7 downto 5)</code>), las señales de estado del acumulador (<code>Aeq0</code>, <code>Apos</code>) y la señal <code>enter</code> del botón. Genera como salidas las <strong>8 señales de control</strong> que gobiernan la ruta de datos.</p>
+    <p>La arquitectura usa <strong>dos procesos</strong>: uno secuencial para el registro de estado (sensible al reloj y reset), y uno combinacional para la lógica de próximo estado. Las salidas de control se generan con <strong>asignaciones concurrentes condicionales</strong> (WHEN/ELSE), que el sintetizador traduce directamente a lógica combinacional.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">VHDL — EC-2 Control Unit (FSM)</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+      </div>
+      <pre class="code-body"><span class="kw">LIBRARY</span> <span class="ty">ieee</span>;
+<span class="kw">USE</span> <span class="ty">ieee.std_logic_1164</span>.<span class="kw">ALL</span>;
+
+<span class="kw">ENTITY</span> <span class="ty">cu</span> <span class="kw">IS</span> <span class="kw">PORT</span>(
+  <span class="sig">clock</span>, <span class="sig">reset</span>, <span class="sig">enter</span>   : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;
+  <span class="sig">IR</span>                      : <span class="kw">IN</span>  <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">5</span>);
+  <span class="sig">Aeq0</span>, <span class="sig">Apos</span>              : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;
+  <span class="sig">IRload</span>, <span class="sig">JMPmux</span>, <span class="sig">PCload</span> : <span class="kw">OUT</span> <span class="ty">STD_LOGIC</span>;
+  <span class="sig">Meminst</span>, <span class="sig">MemWr</span>         : <span class="kw">OUT</span> <span class="ty">STD_LOGIC</span>;
+  <span class="sig">Asel</span>                    : <span class="kw">OUT</span> <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+  <span class="sig">Aload</span>, <span class="sig">Sub</span>              : <span class="kw">OUT</span> <span class="ty">STD_LOGIC</span>;
+  <span class="sig">Halt</span>                    : <span class="kw">OUT</span> <span class="ty">STD_LOGIC</span>
+);
+<span class="kw">END</span> <span class="ty">cu</span>;
+
+<span class="kw">ARCHITECTURE</span> <span class="ty">FSM</span> <span class="kw">OF</span> <span class="ty">cu</span> <span class="kw">IS</span>
+  <span class="kw">TYPE</span> <span class="ty">state_type</span> <span class="kw">IS</span> (
+    <span class="str">s_start</span>, <span class="str">s_fetch</span>, <span class="str">s_decode</span>,
+    <span class="str">s_load</span>, <span class="str">s_store</span>, <span class="str">s_add</span>, <span class="str">s_sub</span>,
+    <span class="str">s_input</span>, <span class="str">s_jz</span>, <span class="str">s_jpos</span>, <span class="str">s_halt</span>
+  );
+  <span class="kw">SIGNAL</span> <span class="sig">state</span>, <span class="sig">nextstate</span> : <span class="ty">state_type</span>;
+<span class="kw">BEGIN</span>
+  <span class="cm">-- Registro de estado</span>
+  <span class="kw">PROCESS</span>(<span class="sig">clock</span>, <span class="sig">reset</span>)
+  <span class="kw">BEGIN</span>
+    <span class="kw">IF</span> <span class="sig">reset</span> = <span class="str">'1'</span> <span class="kw">THEN</span>
+      <span class="sig">state</span> <span class="op">&lt;=</span> <span class="str">s_start</span>;
+    <span class="kw">ELSIF</span> <span class="sig">clock</span><span class="str">'EVENT</span> <span class="kw">AND</span> <span class="sig">clock</span> = <span class="str">'1'</span> <span class="kw">THEN</span>
+      <span class="sig">state</span> <span class="op">&lt;=</span> <span class="sig">nextstate</span>;
+    <span class="kw">END</span> <span class="kw">IF</span>;
+  <span class="kw">END</span> <span class="kw">PROCESS</span>;
+
+  <span class="cm">-- Lógica de próximo estado</span>
+  <span class="kw">PROCESS</span>(<span class="sig">state</span>, <span class="sig">IR</span>, <span class="sig">enter</span>)
+  <span class="kw">BEGIN</span>
+    <span class="kw">CASE</span> <span class="sig">state</span> <span class="kw">IS</span>
+      <span class="kw">WHEN</span> <span class="str">s_start</span>  <span class="op">=></span> <span class="sig">nextstate</span> <span class="op">&lt;=</span> <span class="str">s_fetch</span>;
+      <span class="kw">WHEN</span> <span class="str">s_fetch</span>  <span class="op">=></span> <span class="sig">nextstate</span> <span class="op">&lt;=</span> <span class="str">s_decode</span>;
+      <span class="kw">WHEN</span> <span class="str">s_decode</span> <span class="op">=></span>
+        <span class="kw">CASE</span> <span class="sig">IR</span> <span class="kw">IS</span>
+          <span class="kw">WHEN</span> <span class="str">"000"</span> <span class="op">=></span> <span class="sig">nextstate</span> <span class="op">&lt;=</span> <span class="str">s_load</span>;
+          <span class="kw">WHEN</span> <span class="str">"001"</span> <span class="op">=></span> <span class="sig">nextstate</span> <span class="op">&lt;=</span> <span class="str">s_store</span>;
+          <span class="kw">WHEN</span> <span class="str">"010"</span> <span class="op">=></span> <span class="sig">nextstate</span> <span class="op">&lt;=</span> <span class="str">s_add</span>;
+          <span class="kw">WHEN</span> <span class="str">"011"</span> <span class="op">=></span> <span class="sig">nextstate</span> <span class="op">&lt;=</span> <span class="str">s_sub</span>;
+          <span class="kw">WHEN</span> <span class="str">"100"</span> <span class="op">=></span> <span class="sig">nextstate</span> <span class="op">&lt;=</span> <span class="str">s_input</span>;
+          <span class="kw">WHEN</span> <span class="str">"101"</span> <span class="op">=></span> <span class="sig">nextstate</span> <span class="op">&lt;=</span> <span class="str">s_jz</span>;
+          <span class="kw">WHEN</span> <span class="str">"110"</span> <span class="op">=></span> <span class="sig">nextstate</span> <span class="op">&lt;=</span> <span class="str">s_jpos</span>;
+          <span class="kw">WHEN</span> <span class="kw">OTHERS</span> <span class="op">=></span> <span class="sig">nextstate</span> <span class="op">&lt;=</span> <span class="str">s_halt</span>;
+        <span class="kw">END</span> <span class="kw">CASE</span>;
+      <span class="kw">WHEN</span> <span class="str">s_load</span>  <span class="op">=></span> <span class="sig">nextstate</span> <span class="op">&lt;=</span> <span class="str">s_start</span>;
+      <span class="kw">WHEN</span> <span class="str">s_store</span> <span class="op">=></span> <span class="sig">nextstate</span> <span class="op">&lt;=</span> <span class="str">s_start</span>;
+      <span class="kw">WHEN</span> <span class="str">s_add</span>   <span class="op">=></span> <span class="sig">nextstate</span> <span class="op">&lt;=</span> <span class="str">s_start</span>;
+      <span class="kw">WHEN</span> <span class="str">s_sub</span>   <span class="op">=></span> <span class="sig">nextstate</span> <span class="op">&lt;=</span> <span class="str">s_start</span>;
+      <span class="kw">WHEN</span> <span class="str">s_input</span> <span class="op">=></span>
+        <span class="kw">IF</span> <span class="sig">enter</span> = <span class="str">'1'</span> <span class="kw">THEN</span>
+          <span class="sig">nextstate</span> <span class="op">&lt;=</span> <span class="str">s_start</span>;
+        <span class="kw">ELSE</span>
+          <span class="sig">nextstate</span> <span class="op">&lt;=</span> <span class="str">s_input</span>;     <span class="cm">-- Esperar Enter</span>
+        <span class="kw">END</span> <span class="kw">IF</span>;
+      <span class="kw">WHEN</span> <span class="str">s_jz</span>   <span class="op">=></span> <span class="sig">nextstate</span> <span class="op">&lt;=</span> <span class="str">s_start</span>;
+      <span class="kw">WHEN</span> <span class="str">s_jpos</span> <span class="op">=></span> <span class="sig">nextstate</span> <span class="op">&lt;=</span> <span class="str">s_start</span>;
+      <span class="kw">WHEN</span> <span class="str">s_halt</span> <span class="op">=></span> <span class="sig">nextstate</span> <span class="op">&lt;=</span> <span class="str">s_halt</span>;
+    <span class="kw">END</span> <span class="kw">CASE</span>;
+  <span class="kw">END</span> <span class="kw">PROCESS</span>;
+
+  <span class="cm">-- Lógica de salida (asignaciones concurrentes condicionales)</span>
+  <span class="cm">-- Cada señal se activa solo en los estados que la requieren</span>
+  <span class="sig">IRload</span>  <span class="op">&lt;=</span> <span class="str">'1'</span> <span class="kw">WHEN</span> <span class="sig">state</span> = <span class="str">s_fetch</span>  <span class="kw">ELSE</span> <span class="str">'0'</span>;
+  <span class="sig">JMPmux</span>  <span class="op">&lt;=</span> <span class="str">'1'</span> <span class="kw">WHEN</span> <span class="sig">state</span> = <span class="str">s_jz</span> <span class="kw">OR</span> <span class="sig">state</span> = <span class="str">s_jpos</span> <span class="kw">ELSE</span> <span class="str">'0'</span>;
+  <span class="sig">PCload</span>  <span class="op">&lt;=</span> <span class="str">'1'</span> <span class="kw">WHEN</span> <span class="sig">state</span> = <span class="str">s_fetch</span> <span class="kw">OR</span>
+              (<span class="sig">state</span> = <span class="str">s_jz</span> <span class="kw">AND</span> <span class="sig">Aeq0</span> = <span class="str">'1'</span>) <span class="kw">OR</span>
+              (<span class="sig">state</span> = <span class="str">s_jpos</span> <span class="kw">AND</span> <span class="sig">Apos</span> = <span class="str">'1'</span>) <span class="kw">ELSE</span> <span class="str">'0'</span>;
+  <span class="sig">Meminst</span> <span class="op">&lt;=</span> <span class="str">'1'</span> <span class="kw">WHEN</span> <span class="sig">state</span> = <span class="str">s_decode</span> <span class="kw">OR</span> <span class="sig">state</span> = <span class="str">s_load</span>
+              <span class="kw">OR</span> <span class="sig">state</span> = <span class="str">s_store</span> <span class="kw">OR</span> <span class="sig">state</span> = <span class="str">s_add</span>
+              <span class="kw">OR</span> <span class="sig">state</span> = <span class="str">s_sub</span> <span class="kw">ELSE</span> <span class="str">'0'</span>;
+  <span class="sig">MemWr</span>   <span class="op">&lt;=</span> <span class="str">'1'</span> <span class="kw">WHEN</span> <span class="sig">state</span> = <span class="str">s_store</span> <span class="kw">ELSE</span> <span class="str">'0'</span>;
+  <span class="sig">Asel</span>    <span class="op">&lt;=</span> <span class="str">"00"</span> <span class="kw">WHEN</span> <span class="sig">state</span> = <span class="str">s_load</span>  <span class="kw">ELSE</span>
+              <span class="str">"01"</span> <span class="kw">WHEN</span> <span class="sig">state</span> = <span class="str">s_add</span> <span class="kw">OR</span> <span class="sig">state</span> = <span class="str">s_sub</span> <span class="kw">ELSE</span>
+              <span class="str">"10"</span> <span class="kw">WHEN</span> <span class="sig">state</span> = <span class="str">s_input</span> <span class="kw">ELSE</span> <span class="str">"00"</span>;
+  <span class="sig">Aload</span>   <span class="op">&lt;=</span> <span class="str">'1'</span> <span class="kw">WHEN</span> <span class="sig">state</span> = <span class="str">s_load</span> <span class="kw">OR</span> <span class="sig">state</span> = <span class="str">s_add</span>
+              <span class="kw">OR</span> <span class="sig">state</span> = <span class="str">s_sub</span> <span class="kw">OR</span> <span class="sig">state</span> = <span class="str">s_input</span> <span class="kw">ELSE</span> <span class="str">'0'</span>;
+  <span class="sig">Sub</span>     <span class="op">&lt;=</span> <span class="str">'1'</span> <span class="kw">WHEN</span> <span class="sig">state</span> = <span class="str">s_sub</span>  <span class="kw">ELSE</span> <span class="str">'0'</span>;
+  <span class="sig">Halt</span>    <span class="op">&lt;=</span> <span class="str">'1'</span> <span class="kw">WHEN</span> <span class="sig">state</span> = <span class="str">s_halt</span> <span class="kw">ELSE</span> <span class="str">'0'</span>;
+<span class="kw">END</span> <span class="ty">FSM</span>;</pre>
+    </div>
+
+    <!-- EC-2 Structural Datapath -->
+    <h3>EC-2 — Ruta de Datos Estructural (Datapath)</h3>
+    <p>La ruta de datos (<code>dp</code>) es el componente que realiza todas las operaciones sobre los datos: almacenamiento en registros, acceso a memoria, operaciones aritméticas y selección de fuentes. Recibe las <strong>8 señales de control</strong> de la unidad de control y devuelve el opcode (<code>IR(7:5)</code>) y las señales de estado (<code>Aeq0</code>, <code>Apos</code>).</p>
+    <p>La arquitectura estructural instancia los siguientes componentes hardware, correspondientes a la Figura 12.11:</p>
+    <ul style="margin:0.75rem 0 1rem 1.5rem; line-height:1.8">
+      <li><strong>IR (Registro de Instrucción):</strong> Registro de 8 bits — carga la instrucción de memoria cuando <code>IRload = 1</code></li>
+      <li><strong>JMPmux (MUX 2:1 de 5 bits):</strong> Selecciona entre PC+1 (incremento normal) o IR(4:0) (dirección de salto)</li>
+      <li><strong>PC (Contador de Programa):</strong> Registro de 5 bits — carga nueva dirección cuando <code>PCload = 1</code></li>
+      <li><strong>Incrementador:</strong> Suma 1 al PC actual para avanzar a la siguiente instrucción</li>
+      <li><strong>Meminst MUX:</strong> Selecciona la fuente de dirección de memoria: PC (fetch) o IR(4:0) (acceso a datos)</li>
+      <li><strong>RAM 32×8:</strong> Memoria unificada de programa y datos, inicializada desde PROGRAM.MIF</li>
+      <li><strong>MUX 4:1 (Asel):</strong> Selecciona la entrada del acumulador: RAM directa, resultado del sumador/restador, entrada del usuario, o no usado</li>
+      <li><strong>Acumulador A:</strong> Registro de 8 bits — almacena resultado cuando <code>Aload = 1</code></li>
+      <li><strong>Sumador/Restador:</strong> Opera A ± RAM[dir]; <code>Sub = 1</code> selecciona resta</li>
+    </ul>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">VHDL — EC-2 Datapath (Structural)</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+      </div>
+      <pre class="code-body"><span class="cm">-- ==========================================================</span>
+<span class="cm">-- EC-2 Datapath — Ruta de Datos Estructural</span>
+<span class="cm">-- Figura 12.16 del libro de texto</span>
+<span class="cm">-- Instancia todos los componentes del datapath y los</span>
+<span class="cm">-- interconecta mediante señales internas.</span>
+<span class="cm">-- Componentes: IR, PC, Incrementador, JMPmux, Meminst MUX,</span>
+<span class="cm">--   RAM (lpm_ram_dq), MUX 4:1, Acumulador A, Sumador/Restador</span>
+<span class="cm">-- ==========================================================</span>
+<span class="kw">LIBRARY</span> <span class="ty">IEEE</span>;
+<span class="kw">USE</span> <span class="ty">IEEE.std_logic_1164</span>.<span class="kw">ALL</span>;
+
+<span class="kw">LIBRARY</span> <span class="ty">lpm</span>;           <span class="cm">-- Librería LPM de Altera para componentes parametrizados</span>
+<span class="kw">USE</span> <span class="ty">lpm.lpm_components</span>.<span class="kw">ALL</span>;
+
+<span class="kw">ENTITY</span> <span class="ty">dp</span> <span class="kw">IS</span> <span class="kw">PORT</span>(
+  <span class="sig">Clock</span>, <span class="sig">Clear</span>           : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;             <span class="cm">-- Reloj del sistema y reset asíncrono</span>
+  <span class="cm">-- Entrada de datos del usuario (8 DIP switches)</span>
+  <span class="sig">Input</span>                  : <span class="kw">IN</span>  <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+  <span class="cm">-- Señales de control provenientes de la Unidad de Control (CU)</span>
+  <span class="sig">IRload</span>, <span class="sig">JMPmux</span>, <span class="sig">PCload</span> : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;             <span class="cm">-- Carga IR, sel. MUX salto, carga PC</span>
+  <span class="sig">Meminst</span>, <span class="sig">MemWr</span>        : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;             <span class="cm">-- Sel. dir. memoria, habilitación escritura</span>
+  <span class="sig">Asel</span>                   : <span class="kw">IN</span>  <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);  <span class="cm">-- Selección MUX 4:1 del acumulador</span>
+  <span class="sig">Aload</span>, <span class="sig">Sub</span>             : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;             <span class="cm">-- Carga acumulador, selección resta</span>
+  <span class="cm">-- Señales de estado hacia la Unidad de Control (CU)</span>
+  <span class="sig">IR</span>                     : <span class="kw">OUT</span> <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">5</span>);  <span class="cm">-- Opcode (3 bits superiores de IR)</span>
+  <span class="sig">Aeq0</span>, <span class="sig">Apos</span>             : <span class="kw">OUT</span> <span class="ty">STD_LOGIC</span>;             <span class="cm">-- Banderas: A=0 y A&gt;0</span>
+  <span class="cm">-- Salida de datos (hacia display 7-segmentos)</span>
+  <span class="sig">Output</span>                 : <span class="kw">OUT</span> <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">0</span>)
+);
+<span class="kw">END</span> <span class="ty">dp</span>;
+
+<span class="kw">ARCHITECTURE</span> <span class="ty">Structural</span> <span class="kw">OF</span> <span class="ty">dp</span> <span class="kw">IS</span>
+
+  <span class="cm">-- ========================================</span>
+  <span class="cm">-- Declaración de componentes reutilizables</span>
+  <span class="cm">-- ========================================</span>
+
+  <span class="cm">-- Registro genérico de N bits (IR, PC, Acumulador)</span>
+  <span class="kw">COMPONENT</span> <span class="ty">reg</span>
+  <span class="kw">GENERIC</span>(<span class="sig">size</span> : <span class="ty">INTEGER</span> := <span class="num">4</span>);  <span class="cm">-- Tamaño real definido en GENERIC MAP</span>
+  <span class="kw">PORT</span>(
+    <span class="sig">Clock</span>, <span class="sig">Clear</span>, <span class="sig">Load</span> : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;
+    <span class="sig">D</span> : <span class="kw">IN</span>  <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">size</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);   <span class="cm">-- Entrada de datos</span>
+    <span class="sig">Q</span> : <span class="kw">OUT</span> <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">size</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>)   <span class="cm">-- Salida de datos</span>
+  );
+  <span class="kw">END</span> <span class="kw">COMPONENT</span>;
+
+  <span class="cm">-- Incrementador genérico de N bits (PC + 1)</span>
+  <span class="kw">COMPONENT</span> <span class="ty">increment</span>
+  <span class="kw">GENERIC</span>(<span class="sig">size</span> : <span class="ty">INTEGER</span> := <span class="num">8</span>);
+  <span class="kw">PORT</span>(
+    <span class="sig">A</span> : <span class="kw">IN</span>  <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">size</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);   <span class="cm">-- Valor a incrementar</span>
+    <span class="sig">F</span> : <span class="kw">OUT</span> <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">size</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>)   <span class="cm">-- Resultado = A + 1</span>
+  );
+  <span class="kw">END</span> <span class="kw">COMPONENT</span>;
+
+  <span class="cm">-- Multiplexor 2:1 genérico (JMPmux, Meminst MUX)</span>
+  <span class="kw">COMPONENT</span> <span class="ty">mux2</span>
+  <span class="kw">GENERIC</span>(<span class="sig">size</span> : <span class="ty">INTEGER</span> := <span class="num">8</span>);
+  <span class="kw">PORT</span>(
+    <span class="sig">S</span>      : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;                              <span class="cm">-- Línea de selección</span>
+    <span class="sig">D1</span>, <span class="sig">D0</span> : <span class="kw">IN</span>  <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">size</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);   <span class="cm">-- Entradas de datos</span>
+    <span class="sig">Y</span>      : <span class="kw">OUT</span> <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">size</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>)   <span class="cm">-- Salida: D1 si S=1, D0 si S=0</span>
+  );
+  <span class="kw">END</span> <span class="kw">COMPONENT</span>;
+
+  <span class="cm">-- Multiplexor 4:1 genérico (selección entrada del acumulador)</span>
+  <span class="kw">COMPONENT</span> <span class="ty">mux4</span>
+  <span class="kw">GENERIC</span>(<span class="sig">size</span> : <span class="ty">INTEGER</span> := <span class="num">8</span>);
+  <span class="kw">PORT</span>(
+    <span class="sig">S</span>              : <span class="kw">IN</span>  <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);   <span class="cm">-- Selección (2 bits)</span>
+    <span class="sig">D3</span>, <span class="sig">D2</span>, <span class="sig">D1</span>, <span class="sig">D0</span> : <span class="kw">IN</span>  <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">size</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+    <span class="sig">Y</span>              : <span class="kw">OUT</span> <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">size</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>)
+  );  <span class="cm">-- Asel: "00"→RAM, "01"→AddSub, "10"→Input, "11"→no usado</span>
+  <span class="kw">END</span> <span class="kw">COMPONENT</span>;
+
+  <span class="cm">-- Sumador/Restador genérico de N bits</span>
+  <span class="kw">COMPONENT</span> <span class="ty">addsub</span>
+  <span class="kw">GENERIC</span>(<span class="sig">n</span> : <span class="ty">INTEGER</span> := <span class="num">4</span>);
+  <span class="kw">PORT</span>(
+    <span class="sig">S</span>               : <span class="kw">IN</span>  <span class="ty">std_logic</span>;                     <span class="cm">-- 0=Suma, 1=Resta</span>
+    <span class="sig">A</span>, <span class="sig">B</span>           : <span class="kw">IN</span>  <span class="ty">std_logic_vector</span>(<span class="sig">n</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+    <span class="sig">F</span>               : <span class="kw">OUT</span> <span class="ty">std_logic_vector</span>(<span class="sig">n</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>); <span class="cm">-- Resultado</span>
+    <span class="sig">unsigned_overflow</span> : <span class="kw">OUT</span> <span class="ty">std_logic</span>;                   <span class="cm">-- Desbordamiento sin signo</span>
+    <span class="sig">signed_overflow</span>   : <span class="kw">OUT</span> <span class="ty">std_logic</span>                    <span class="cm">-- Desbordamiento con signo</span>
+  );
+  <span class="kw">END</span> <span class="kw">COMPONENT</span>;
+
+  <span class="cm">-- ==========================================</span>
+  <span class="cm">-- Señales internas de interconexión</span>
+  <span class="cm">-- ==========================================</span>
+  <span class="kw">SIGNAL</span> <span class="sig">dp_IR</span>, <span class="sig">dp_RAMQ</span>       : <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);  <span class="cm">-- Salida IR, salida RAM</span>
+  <span class="kw">SIGNAL</span> <span class="sig">dp_JMPmux</span>, <span class="sig">dp_PC</span>    : <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">4</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);  <span class="cm">-- Salida MUX salto, salida PC</span>
+  <span class="kw">SIGNAL</span> <span class="sig">dp_increment</span>         : <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">4</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);  <span class="cm">-- PC + 1</span>
+  <span class="kw">SIGNAL</span> <span class="sig">dp_meminst</span>           : <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">4</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);  <span class="cm">-- Dirección de memoria</span>
+  <span class="kw">SIGNAL</span> <span class="sig">dp_Amux</span>, <span class="sig">dp_addsub</span>  : <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);  <span class="cm">-- Entrada MUX A, resultado ALU</span>
+  <span class="kw">SIGNAL</span> <span class="sig">dp_A</span>                 : <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);  <span class="cm">-- Salida del acumulador A</span>
+
+<span class="kw">BEGIN</span>
+  <span class="cm">-- ==========================================</span>
+  <span class="cm">-- Instanciación estructural de componentes</span>
+  <span class="cm">-- ==========================================</span>
+
+  <span class="cm">-- U0: Registro de Instrucción (IR) — 8 bits</span>
+  <span class="cm">-- Carga la instrucción leída de memoria cuando IRload='1'</span>
+  <span class="sig">U0</span>: <span class="ty">reg</span> <span class="kw">GENERIC MAP</span>(<span class="num">8</span>) <span class="kw">PORT MAP</span>(
+    <span class="sig">Clock</span>, <span class="sig">Clear</span>, <span class="sig">IRLoad</span>, <span class="sig">dp_RAMQ</span>, <span class="sig">dp_IR</span>);
+  <span class="sig">IR</span> <span class="op">&lt;=</span> <span class="sig">dp_IR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">5</span>);  <span class="cm">-- Enviar opcode a la CU</span>
+
+  <span class="cm">-- U1: JMPmux — MUX 2:1 de 5 bits</span>
+  <span class="cm">-- S=0: siguiente instrucción (PC+1)</span>
+  <span class="cm">-- S=1: dirección de salto desde IR(4:0)</span>
+  <span class="sig">U1</span>: <span class="ty">mux2</span> <span class="kw">GENERIC MAP</span>(<span class="num">5</span>) <span class="kw">PORT MAP</span>(
+    <span class="sig">JMPmux</span>, <span class="sig">dp_IR</span>(<span class="num">4</span> <span class="kw">DOWNTO</span> <span class="num">0</span>), <span class="sig">dp_increment</span>, <span class="sig">dp_JMPmux</span>);
+
+  <span class="cm">-- U2: Contador de Programa (PC) — 5 bits</span>
+  <span class="cm">-- Se carga con la salida del JMPmux cuando PCload='1'</span>
+  <span class="sig">U2</span>: <span class="ty">reg</span> <span class="kw">GENERIC MAP</span>(<span class="num">5</span>) <span class="kw">PORT MAP</span>(
+    <span class="sig">Clock</span>, <span class="sig">Clear</span>, <span class="sig">PCLoad</span>, <span class="sig">dp_JMPmux</span>, <span class="sig">dp_PC</span>);
+
+  <span class="cm">-- U3: Meminst MUX — MUX 2:1 de 5 bits</span>
+  <span class="cm">-- S=0: dirección del PC (fetch de instrucción)</span>
+  <span class="cm">-- S=1: dirección del operando desde IR(4:0)</span>
+  <span class="sig">U3</span>: <span class="ty">mux2</span> <span class="kw">GENERIC MAP</span>(<span class="num">5</span>) <span class="kw">PORT MAP</span>(
+    <span class="sig">Meminst</span>, <span class="sig">dp_IR</span>(<span class="num">4</span> <span class="kw">DOWNTO</span> <span class="num">0</span>), <span class="sig">dp_PC</span>, <span class="sig">dp_meminst</span>);
+
+  <span class="cm">-- U4: Incrementador — PC + 1</span>
+  <span class="cm">-- Calcula la siguiente dirección secuencial</span>
+  <span class="sig">U4</span>: <span class="ty">increment</span> <span class="kw">GENERIC MAP</span>(<span class="num">5</span>) <span class="kw">PORT MAP</span>(
+    <span class="sig">dp_PC</span>, <span class="sig">dp_increment</span>);
+
+  <span class="cm">-- U5: RAM 32×8 — Memoria unificada (programa + datos)</span>
+  <span class="cm">-- Inicializada con PROGRAM.MIF al configurar la FPGA</span>
+  <span class="cm">-- Lectura: datos salen por dp_RAMQ</span>
+  <span class="cm">-- Escritura: cuando MemWr='1', escribe dp_A en la dirección</span>
+  <span class="sig">U5</span>: <span class="ty">lpm_ram_dq</span>
+  <span class="kw">GENERIC MAP</span>(
+    <span class="sig">lpm_widthad</span>          <span class="op">=></span> <span class="num">5</span>,               <span class="cm">-- 5 bits de dirección → 32 posiciones</span>
+    <span class="sig">lpm_outdata</span>          <span class="op">=></span> <span class="str">"UNREGISTERED"</span>,  <span class="cm">-- Salida combinacional (sin registro)</span>
+    <span class="sig">lpm_indata</span>           <span class="op">=></span> <span class="str">"UNREGISTERED"</span>,
+    <span class="sig">lpm_address_control</span>  <span class="op">=></span> <span class="str">"UNREGISTERED"</span>,
+    <span class="sig">lpm_file</span>             <span class="op">=></span> <span class="str">"program.mif"</span>,  <span class="cm">-- Archivo de inicialización de memoria</span>
+    <span class="sig">lpm_width</span>            <span class="op">=></span> <span class="num">8</span>               <span class="cm">-- 8 bits de ancho de palabra</span>
+  )
+  <span class="kw">PORT MAP</span>(
+    <span class="sig">data</span>    <span class="op">=></span> <span class="sig">dp_A</span>,        <span class="cm">-- Datos de escritura (del acumulador)</span>
+    <span class="sig">address</span> <span class="op">=></span> <span class="sig">dp_meminst</span>,  <span class="cm">-- Dirección (del MUX Meminst)</span>
+    <span class="sig">we</span>      <span class="op">=></span> <span class="sig">MemWr</span>,       <span class="cm">-- Write Enable</span>
+    <span class="sig">inclock</span> <span class="op">=></span> <span class="sig">Clock</span>,       <span class="cm">-- Reloj para escritura síncrona</span>
+    <span class="sig">q</span>       <span class="op">=></span> <span class="sig">dp_RAMQ</span>      <span class="cm">-- Datos leídos de memoria</span>
+  );
+
+  <span class="cm">-- U6: MUX 4:1 — Selección de entrada al acumulador</span>
+  <span class="cm">-- Asel="00": dato de RAM (LOAD), "01": resultado ALU (ADD/SUB)</span>
+  <span class="cm">-- Asel="10": entrada del usuario (IN), "11": no usado</span>
+  <span class="sig">U6</span>: <span class="ty">mux4</span> <span class="kw">GENERIC MAP</span>(<span class="num">8</span>) <span class="kw">PORT MAP</span>(
+    <span class="sig">Asel</span>, <span class="sig">dp_RAMQ</span>, <span class="sig">dp_RAMQ</span>, <span class="sig">Input</span>, <span class="sig">dp_addsub</span>, <span class="sig">dp_Amux</span>);
+
+  <span class="cm">-- U7: Acumulador A — Registro de 8 bits</span>
+  <span class="cm">-- Almacena el resultado de la operación cuando Aload='1'</span>
+  <span class="sig">U7</span>: <span class="ty">reg</span> <span class="kw">GENERIC MAP</span>(<span class="num">8</span>) <span class="kw">PORT MAP</span>(
+    <span class="sig">Clock</span>, <span class="sig">Clear</span>, <span class="sig">ALoad</span>, <span class="sig">dp_Amux</span>, <span class="sig">dp_A</span>);
+
+  <span class="cm">-- U8: Sumador/Restador de 8 bits</span>
+  <span class="cm">-- Sub='0': F = A + RAM[dir] (suma)</span>
+  <span class="cm">-- Sub='1': F = A - RAM[dir] (resta)</span>
+  <span class="sig">U8</span>: <span class="ty">addsub</span> <span class="kw">GENERIC MAP</span>(<span class="num">8</span>) <span class="kw">PORT MAP</span>(
+    <span class="sig">Sub</span>, <span class="sig">dp_A</span>, <span class="sig">dp_RAMQ</span>, <span class="sig">dp_addsub</span>, <span class="kw">open</span>, <span class="kw">open</span>);
+
+  <span class="cm">-- ==========================================</span>
+  <span class="cm">-- Señales de estado para la Unidad de Control</span>
+  <span class="cm">-- ==========================================</span>
+  <span class="sig">Aeq0</span>   <span class="op">&lt;=</span> <span class="str">'1'</span> <span class="kw">WHEN</span> <span class="sig">dp_A</span> = <span class="str">"00000000"</span> <span class="kw">ELSE</span> <span class="str">'0'</span>;  <span class="cm">-- Bandera: A es cero</span>
+  <span class="sig">Apos</span>   <span class="op">&lt;=</span> <span class="kw">NOT</span> <span class="sig">dp_A</span>(<span class="num">7</span>);                               <span class="cm">-- Bandera: A es positivo (MSB=0)</span>
+  <span class="sig">Output</span> <span class="op">&lt;=</span> <span class="sig">dp_A</span>;                                      <span class="cm">-- La salida siempre muestra el acumulador</span>
+<span class="kw">END</span> <span class="ty">Structural</span>;</pre>
+    </div>
+
+    <div class="info-box">
+      <strong>📌 Nota sobre la RAM (lpm_ram_dq):</strong> El componente <code>lpm_ram_dq</code> es un megabloque de Altera (ahora Intel) que implementa RAM parametrizada. El archivo <code>PROGRAM.MIF</code> (Memory Initialization File) carga el programa en la RAM al configurar la FPGA. La salida <code>"UNREGISTERED"</code> significa que los datos leídos aparecen combinacionalmente (sin esperar un ciclo de reloj), lo cual es necesario para que las instrucciones LOAD y ADD/SUB lean el dato en el mismo ciclo que activan la dirección.
+    </div>
+
+    <!-- EC-2 Top-Level Structural -->
+    <h3>EC-2 — Microprocesador Completo (Estructural)</h3>
+    <p>La entidad de nivel superior (<code>mp</code>) conecta la unidad de control (<code>cu</code>) con la ruta de datos (<code>dp</code>) mediante <strong>señales internas de interconexión</strong>. Este es el patrón clásico de diseño estructural: cada componente se declara, se instancia y se cablea. Las señales de control fluyen de la CU al datapath, y las señales de estado fluyen del datapath a la CU, formando un <strong>lazo cerrado de retroalimentación</strong>.</p>
+    <p>La Figura 12.13 muestra el circuito completo resultante. Nótese que la entidad <code>mp</code> expone al exterior solo las señales necesarias: <code>clock</code>, <code>reset</code>, <code>enter</code> (botón), <code>input</code> (DIP switches), <code>output</code> (display) — toda la complejidad interna queda encapsulada.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">VHDL — EC-2 Top-Level Structural</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+      </div>
+      <pre class="code-body"><span class="kw">LIBRARY</span> <span class="ty">ieee</span>;
+<span class="kw">USE</span> <span class="ty">ieee.std_logic_1164</span>.<span class="kw">ALL</span>;
+
+<span class="kw">ENTITY</span> <span class="ty">mp</span> <span class="kw">IS</span> <span class="kw">PORT</span>(
+  <span class="sig">clock</span>, <span class="sig">reset</span>, <span class="sig">enter</span> : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;
+  <span class="sig">input</span>                : <span class="kw">IN</span>  <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+  <span class="sig">output</span>               : <span class="kw">OUT</span> <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">0</span>)
+);
+<span class="kw">END</span> <span class="ty">mp</span>;
+
+<span class="kw">ARCHITECTURE</span> <span class="ty">Structural</span> <span class="kw">OF</span> <span class="ty">mp</span> <span class="kw">IS</span>
+  <span class="cm">-- Declaración de componentes</span>
+  <span class="kw">COMPONENT</span> <span class="ty">cu</span> <span class="kw">PORT</span>(
+    <span class="sig">clock</span>, <span class="sig">reset</span>, <span class="sig">enter</span>   : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;
+    <span class="sig">IR</span>                      : <span class="kw">IN</span>  <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">5</span>);
+    <span class="sig">Aeq0</span>, <span class="sig">Apos</span>              : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;
+    <span class="sig">IRload</span>, <span class="sig">JMPmux</span>, <span class="sig">PCload</span> : <span class="kw">OUT</span> <span class="ty">STD_LOGIC</span>;
+    <span class="sig">Meminst</span>, <span class="sig">MemWr</span>         : <span class="kw">OUT</span> <span class="ty">STD_LOGIC</span>;
+    <span class="sig">Asel</span>                    : <span class="kw">OUT</span> <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+    <span class="sig">Aload</span>, <span class="sig">Sub</span>              : <span class="kw">OUT</span> <span class="ty">STD_LOGIC</span>;
+    <span class="sig">Halt</span>                    : <span class="kw">OUT</span> <span class="ty">STD_LOGIC</span>
+  );
+  <span class="kw">END</span> <span class="kw">COMPONENT</span>;
+
+  <span class="kw">COMPONENT</span> <span class="ty">dp</span> <span class="kw">PORT</span>(
+    <span class="sig">clock</span>, <span class="sig">reset</span>          : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;
+    <span class="sig">input</span>                 : <span class="kw">IN</span>  <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+    <span class="sig">IRload</span>, <span class="sig">JMPmux</span>, <span class="sig">PCload</span>: <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;
+    <span class="sig">Meminst</span>, <span class="sig">MemWr</span>        : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;
+    <span class="sig">Asel</span>                   : <span class="kw">IN</span>  <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+    <span class="sig">Aload</span>, <span class="sig">Sub</span>             : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;
+    <span class="sig">IR</span>                     : <span class="kw">OUT</span> <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">5</span>);
+    <span class="sig">Aeq0</span>, <span class="sig">Apos</span>             : <span class="kw">OUT</span> <span class="ty">STD_LOGIC</span>;
+    <span class="sig">output</span>                 : <span class="kw">OUT</span> <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">0</span>)
+  );
+  <span class="kw">END</span> <span class="kw">COMPONENT</span>;
+
+  <span class="cm">-- Señales internas de interconexión (bus de control + bus de estado)</span>
+  <span class="cm">-- Estas señales conectan las salidas de un componente con las entradas del otro</span>
+  <span class="kw">SIGNAL</span> <span class="sig">IRsig</span>    : <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">5</span>);
+  <span class="kw">SIGNAL</span> <span class="sig">Aeq0sig</span>, <span class="sig">Apos_sig</span>        : <span class="ty">STD_LOGIC</span>;
+  <span class="kw">SIGNAL</span> <span class="sig">IRload_s</span>, <span class="sig">JMPmux_s</span>, <span class="sig">PCload_s</span> : <span class="ty">STD_LOGIC</span>;
+  <span class="kw">SIGNAL</span> <span class="sig">Meminst_s</span>, <span class="sig">MemWr_s</span>       : <span class="ty">STD_LOGIC</span>;
+  <span class="kw">SIGNAL</span> <span class="sig">Asel_s</span>   : <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+  <span class="kw">SIGNAL</span> <span class="sig">Aload_s</span>, <span class="sig">Sub_s</span>, <span class="sig">Halt_s</span>   : <span class="ty">STD_LOGIC</span>;
+<span class="kw">BEGIN</span>
+  <span class="cm">-- Instancia de la Unidad de Control (CU)</span>
+  <span class="cm">-- Recibe: reloj, reset, enter, opcode (IRsig), banderas (Aeq0, Apos)</span>
+  <span class="cm">-- Genera: 8 señales de control para gobernar el datapath</span>
+  <span class="sig">U1</span>: <span class="ty">cu</span> <span class="kw">PORT MAP</span>(
+    <span class="sig">clock</span>, <span class="sig">reset</span>, <span class="sig">enter</span>,
+    <span class="sig">IRsig</span>, <span class="sig">Aeq0sig</span>, <span class="sig">Apos_sig</span>,
+    <span class="sig">IRload_s</span>, <span class="sig">JMPmux_s</span>, <span class="sig">PCload_s</span>,
+    <span class="sig">Meminst_s</span>, <span class="sig">MemWr_s</span>,
+    <span class="sig">Asel_s</span>, <span class="sig">Aload_s</span>, <span class="sig">Sub_s</span>, <span class="sig">Halt_s</span>
+  );
+
+  <span class="cm">-- Instancia de la Ruta de Datos (Datapath)</span>
+  <span class="cm">-- Recibe: reloj, reset, entrada de datos, 8 señales de control</span>
+  <span class="cm">-- Genera: opcode (IRsig), banderas (Aeq0, Apos), salida de datos</span>
+  <span class="sig">U2</span>: <span class="ty">dp</span> <span class="kw">PORT MAP</span>(
+    <span class="sig">clock</span>, <span class="sig">reset</span>, <span class="sig">input</span>,
+    <span class="sig">IRload_s</span>, <span class="sig">JMPmux_s</span>, <span class="sig">PCload_s</span>,
+    <span class="sig">Meminst_s</span>, <span class="sig">MemWr_s</span>,
+    <span class="sig">Asel_s</span>, <span class="sig">Aload_s</span>, <span class="sig">Sub_s</span>,
+    <span class="sig">IRsig</span>, <span class="sig">Aeq0sig</span>, <span class="sig">Apos_sig</span>,
+    <span class="sig">output</span>
+  );
+<span class="kw">END</span> <span class="ty">Structural</span>;</pre>
+    </div>
+  </section>
+
+  <!-- PROGRAMAS DE EJEMPLO -->
+  <section class="section" id="programas">
+    <div class="section-label">Programas de Ejemplo</div>
+    <h2>Programas para el EC-2</h2>
+    <p>A continuación se presentan programas adicionales que demuestran las capacidades del microprocesador EC-2.</p>
+
+    <h3>Programa SUM: Suma de N números</h3>
+    <p>Lee N números de la entrada y calcula su suma acumulada.</p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">Ensamblador EC-2</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+      </div>
+      <pre class="code-body"><span class="cm">-- Programa SUM: Acumula la suma de valores de entrada</span>
+<span class="cm">-- dir 29 = suma acumulada, dir 30 = contador</span>
+<span class="cm">-- dir 31 = constante 1 (para decrementar)</span>
+
+<span class="num"> 0:</span>  <span class="kw">IN</span>    A            <span class="cm">-- Leer cantidad N</span>
+<span class="num"> 1:</span>  <span class="kw">STORE</span> <span class="num">30</span>           <span class="cm">-- Guardar como contador</span>
+<span class="num"> 2:</span>  <span class="kw">LOAD</span>  <span class="num">28</span>           <span class="cm">-- A ← 0 (dir 28 tiene 0)</span>
+<span class="num"> 3:</span>  <span class="kw">STORE</span> <span class="num">29</span>           <span class="cm">-- suma ← 0</span>
+<span class="cm">-- loop:</span>
+<span class="num"> 4:</span>  <span class="kw">LOAD</span>  <span class="num">30</span>           <span class="cm">-- A ← contador</span>
+<span class="num"> 5:</span>  <span class="kw">JZ</span>    <span class="num">14</span>           <span class="cm">-- Si contador = 0, ir a done</span>
+<span class="num"> 6:</span>  <span class="kw">IN</span>    A            <span class="cm">-- Leer siguiente número</span>
+<span class="num"> 7:</span>  <span class="kw">ADD</span>   <span class="num">29</span>           <span class="cm">-- A ← número + suma</span>
+<span class="num"> 8:</span>  <span class="kw">STORE</span> <span class="num">29</span>           <span class="cm">-- Actualizar suma</span>
+<span class="num"> 9:</span>  <span class="kw">LOAD</span>  <span class="num">30</span>           <span class="cm">-- A ← contador</span>
+<span class="num">10:</span>  <span class="kw">SUB</span>   <span class="num">31</span>           <span class="cm">-- A ← contador - 1</span>
+<span class="num">11:</span>  <span class="kw">STORE</span> <span class="num">30</span>           <span class="cm">-- Actualizar contador</span>
+<span class="num">12:</span>  <span class="kw">LOAD</span>  <span class="num">28</span>           <span class="cm">-- (no-op para saltar)</span>
+<span class="num">13:</span>  <span class="kw">JZ</span>    <span class="num">4</span>            <span class="cm">-- Volver al loop (A=0 siempre)</span>
+<span class="cm">-- done:</span>
+<span class="num">14:</span>  <span class="kw">LOAD</span>  <span class="num">29</span>           <span class="cm">-- A ← suma total</span>
+<span class="num">15:</span>  <span class="kw">STORE</span> <span class="num">27</span>           <span class="cm">-- Guardar resultado</span>
+<span class="num">16:</span>  <span class="kw">HALT</span>              <span class="cm">-- Fin</span></pre>
+    </div>
+
+    <h3>Programa COUNT: Conteo de valores positivos</h3>
+    <p>Lee una serie de números con signo y cuenta cuántos son positivos (bit 7 = 0, valor ≠ 0).</p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">Ensamblador EC-2</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+      </div>
+      <pre class="code-body"><span class="cm">-- Programa COUNT: Cuenta valores positivos</span>
+<span class="cm">-- dir 29 = total de entradas, dir 30 = conteo positivos</span>
+<span class="cm">-- dir 31 = constante 1</span>
+
+<span class="num"> 0:</span>  <span class="kw">IN</span>    A            <span class="cm">-- Leer cantidad total</span>
+<span class="num"> 1:</span>  <span class="kw">STORE</span> <span class="num">29</span>           <span class="cm">-- Guardar como total</span>
+<span class="num"> 2:</span>  <span class="kw">LOAD</span>  <span class="num">28</span>           <span class="cm">-- A ← 0</span>
+<span class="num"> 3:</span>  <span class="kw">STORE</span> <span class="num">30</span>           <span class="cm">-- conteo ← 0</span>
+<span class="cm">-- loop:</span>
+<span class="num"> 4:</span>  <span class="kw">LOAD</span>  <span class="num">29</span>           <span class="cm">-- A ← total restante</span>
+<span class="num"> 5:</span>  <span class="kw">JZ</span>    <span class="num">14</span>           <span class="cm">-- Si total = 0, ir a done</span>
+<span class="num"> 6:</span>  <span class="kw">IN</span>    A            <span class="cm">-- Leer siguiente valor</span>
+<span class="num"> 7:</span>  <span class="kw">JPOS</span>  <span class="num">9</span>            <span class="cm">-- Si positivo, contar</span>
+<span class="num"> 8:</span>  <span class="kw">LOAD</span>  <span class="num">28</span>           <span class="cm">-- saltar incremento</span>
+<span class="cm">-- incrementar:</span>
+<span class="num"> 9:</span>  <span class="kw">LOAD</span>  <span class="num">30</span>           <span class="cm">-- A ← conteo</span>
+<span class="num">10:</span>  <span class="kw">ADD</span>   <span class="num">31</span>           <span class="cm">-- A ← conteo + 1</span>
+<span class="num">11:</span>  <span class="kw">STORE</span> <span class="num">30</span>           <span class="cm">-- Actualizar conteo</span>
+<span class="cm">-- decrementar total:</span>
+<span class="num">12:</span>  <span class="kw">LOAD</span>  <span class="num">29</span>           <span class="cm">-- A ← total</span>
+<span class="num">13:</span>  <span class="kw">SUB</span>   <span class="num">31</span>           <span class="cm">-- A ← total - 1</span>
+<span class="num">14:</span>  <span class="kw">STORE</span> <span class="num">29</span>           <span class="cm">-- Actualizar total</span>
+<span class="num">15:</span>  <span class="kw">LOAD</span>  <span class="num">28</span>           <span class="cm">-- (no-op)</span>
+<span class="num">16:</span>  <span class="kw">JZ</span>    <span class="num">4</span>            <span class="cm">-- Volver al loop</span>
+<span class="cm">-- done:</span>
+<span class="num">17:</span>  <span class="kw">LOAD</span>  <span class="num">30</span>           <span class="cm">-- A ← conteo total</span>
+<span class="num">18:</span>  <span class="kw">HALT</span>              <span class="cm">-- Fin</span></pre>
+    </div>
+  </section>
+
+  <!-- RESUMEN DEL CAPÍTULO -->
+  <section class="section" id="resumen">
+    <div class="section-label">Resumen</div>
+    <h2>Resumen del Capítulo</h2>
+    <p>Al completar este capítulo, deberías ser capaz de realizar cada uno de los siguientes puntos para un microprocesador simple:</p>
+    <ul class="checklist">
+      <li>Definir el conjunto de instrucciones (Instruction Set) del microprocesador</li>
+      <li>Definir el formato de la instrucción y el opcode para cada instrucción</li>
+      <li>Comprender la función del Registro de Instrucción (IR) y su conexión con la CU</li>
+      <li>Comprender el Contador de Programa (PC) y la secuencia de direcciones</li>
+      <li>Describir el ciclo de instrucción: Fetch → Decode → Execute</li>
+      <li>Derivar el circuito de la ruta de datos (datapath) a partir del ISA</li>
+      <li>Derivar el diagrama de estados de la unidad de control (FSM)</li>
+      <li>Construir la tabla de próximo estado y la tabla de implementación</li>
+      <li>Derivar las ecuaciones de excitación y de salida del circuito de control</li>
+      <li>Implementar el circuito completo del microprocesador conectando CU + Datapath</li>
+      <li>Escribir programas en lenguaje máquina y crear archivos PROGRAM.MIF</li>
+      <li>Ejecutar y simular programas en el microprocesador diseñado</li>
+      <li>Implementar la computadora completa en hardware (tarjeta UP2 con FPGA)</li>
+      <li>Escribir código VHDL conductual (FSMD) y estructural (FSM+D)</li>
+    </ul>
+  </section>
+
+  <!-- PROBLEMAS Y EJERCICIOS -->
+  <section class="section" id="problemas">
+    <div class="section-label">Ejercicios</div>
+    <h2>Problemas y Ejercicios</h2>
+    <p>Los siguientes problemas refuerzan los conceptos de diseño de microprocesadores presentados en este capítulo. Cubren modificaciones al hardware, programación en lenguaje máquina y escritura de código VHDL.</p>
+
+    <!-- Problem 12.1 -->
+    <div class="problem-card">
+      <div class="problem-num">Problema 12.1 — Rediseño del EC-1</div>
+      <p class="problem-text">Rediseñar la unidad de control y/o la ruta de datos del microprocesador EC-1 para cada uno de los siguientes cambios de manera independiente. Para cada modificación, obtener la tabla de próximo estado, ecuaciones de excitación, ecuaciones de salida y el circuito completo.</p>
+      <ul class="problem-parts">
+        <li><span class="part-label">a)</span> Modificar la instrucción OUTPUT para que la salida solo muestre el valor de A cuando la instrucción OUT se está ejecutando. (En el diseño original, OUTPUT siempre muestra A.)</li>
+        <li><span class="part-label">b)</span> Modificar la instrucción INPUT para que la computadora espere a que el usuario presione el botón Enter antes de leer el valor de entrada.</li>
+        <li><span class="part-label">c)</span> Agregar una instrucción INC A (opcode <code>000</code>) que incrementa el acumulador A. (Las instrucciones existentes se re-codifican comenzando desde opcode <code>001</code>.)</li>
+        <li><span class="part-label">d)</span> Agregar una instrucción LOAD A, dirección (opcode <code>001</code>) que carga un valor de memoria en el acumulador. (Las instrucciones existentes se re-codifican.)</li>
+      </ul>
+    </div>
+
+    <!-- Problem 12.2 -->
+    <div class="problem-card">
+      <div class="problem-num">Problema 12.2 — Código VHDL Conductual del EC-1</div>
+      <p class="problem-text">Escribir el código VHDL conductual (FSMD) para el microprocesador EC-1. El código debe describir la máquina de estados completa en un solo proceso, incluyendo el ciclo Fetch-Decode-Execute y todas las instrucciones.</p>
+    </div>
+
+    <!-- Problem 12.3 -->
+    <div class="problem-card">
+      <div class="problem-num">Problema 12.3 — VHDL Conductual del EC-1 Modificado</div>
+      <p class="problem-text">Reescribir el código VHDL conductual del EC-1 incorporando cada una de las modificaciones descritas en el Problema 12.1 (partes a, b, c y d) de manera independiente.</p>
+    </div>
+
+    <!-- Problem 12.4 -->
+    <div class="problem-card">
+      <div class="problem-num">Problema 12.4 — Programas para el EC-2</div>
+      <p class="problem-text">Escribir programas en lenguaje máquina para el microprocesador EC-2 que resuelvan cada uno de los siguientes problemas. Crear los archivos PROGRAM.MIF correspondientes.</p>
+      <ul class="problem-parts">
+        <li><span class="part-label">e)</span> Sumar dos números ingresados por el usuario</li>
+        <li><span class="part-label">f)</span> Determinar el mayor de dos números ingresados</li>
+        <li><span class="part-label">g)</span> Calcular el producto de dos números (usando sumas repetidas)</li>
+        <li><span class="part-label">h)</span> Contar números ingresados hasta que se ingrese 0 (terminador)</li>
+        <li><span class="part-label">i)</span> Sumar una secuencia de números hasta que se ingrese 0</li>
+        <li><span class="part-label">j)</span> Encontrar el mayor de una secuencia de números (terminada en 0)</li>
+        <li><span class="part-label">k)</span> Encontrar el mayor y el segundo mayor de una secuencia (terminada en 0)</li>
+        <li><span class="part-label">l)</span> Ordenar tres números en orden ascendente</li>
+      </ul>
+    </div>
+
+    <!-- Problem 12.5 -->
+    <div class="problem-card">
+      <div class="problem-num">Problema 12.5 — Rediseño del EC-2</div>
+      <p class="problem-text">Rediseñar la unidad de control y/o la ruta de datos del microprocesador EC-2 para cada modificación. Obtener la tabla de próximo estado, ecuaciones de excitación, ecuaciones de salida y el circuito completo.</p>
+      <ul class="problem-parts">
+        <li><span class="part-label">a)</span> Reemplazar la instrucción SUB con LSHIFT (desplazamiento lógico a la izquierda del acumulador)</li>
+        <li><span class="part-label">b)</span> Reemplazar la instrucción SUB con OUTPUT (mostrar contenido de A en la salida)</li>
+        <li><span class="part-label">c)</span> Agregar una instrucción LSHIFT adicional (mantener SUB, expandir a 9 instrucciones)</li>
+        <li><span class="part-label">d)</span> Agregar una instrucción OUTPUT adicional (mantener SUB, expandir a 9 instrucciones)</li>
+      </ul>
+    </div>
+
+    <!-- Problem 12.6 -->
+    <div class="problem-card">
+      <div class="problem-num">Problema 12.6 — VHDL Conductual del EC-2 Modificado</div>
+      <p class="problem-text">Reescribir el código VHDL conductual del EC-2 incorporando cada una de las modificaciones descritas en el Problema 12.5 (partes a, b, c y d) de manera independiente.</p>
+    </div>
+
+    <!-- Problem 12.7 -->
+    <div class="problem-card">
+      <div class="problem-num">Problema 12.7 — Microprocesador con ISA Expandido</div>
+      <p class="problem-text">Dado el siguiente conjunto de instrucciones expandido, diseñar manualmente la ruta de datos (datapath) del microprocesador. El formato de instrucción es de 8 bits con opcode de 5 bits y dirección de 3 bits.</p>
+      <div class="table-wrap" style="margin-top:1rem">
+        <table>
+          <thead>
+            <tr><th>Categoría</th><th>Instrucción</th><th>Operación</th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="5" style="font-weight:600;color:var(--accent)">Movimiento de Datos</td><td><code>LDA dirección</code></td><td>A ← M[dirección]</td></tr>
+            <tr><td><code>STA dirección</code></td><td>M[dirección] ← A</td></tr>
+            <tr><td><code>LDM dirección</code></td><td>M[dirección] ← constante</td></tr>
+            <tr><td><code>STM dirección</code></td><td>M[M[dirección]] ← A (indirecto)</td></tr>
+            <tr><td><code>LDI dirección</code></td><td>A ← M[M[dirección]] (indirecto)</td></tr>
+            <tr><td rowspan="8" style="font-weight:600;color:var(--accent2)">Saltos</td><td><code>JMP dirección</code></td><td>PC ← dirección</td></tr>
+            <tr><td><code>JMPR dirección</code></td><td>PC ← PC + dirección (relativo)</td></tr>
+            <tr><td><code>JZ dirección</code></td><td>Si A = 0: PC ← dirección</td></tr>
+            <tr><td><code>JZR dirección</code></td><td>Si A = 0: PC ← PC + dirección</td></tr>
+            <tr><td><code>JNZ dirección</code></td><td>Si A ≠ 0: PC ← dirección</td></tr>
+            <tr><td><code>JNZR dirección</code></td><td>Si A ≠ 0: PC ← PC + dirección</td></tr>
+            <tr><td><code>JP dirección</code></td><td>Si A > 0: PC ← dirección</td></tr>
+            <tr><td><code>JPR dirección</code></td><td>Si A > 0: PC ← PC + dirección</td></tr>
+            <tr><td rowspan="10" style="font-weight:600;color:var(--success)">Aritmético-Lógicas</td><td><code>AND dirección</code></td><td>A ← A AND M[dirección]</td></tr>
+            <tr><td><code>OR dirección</code></td><td>A ← A OR M[dirección]</td></tr>
+            <tr><td><code>ADD dirección</code></td><td>A ← A + M[dirección]</td></tr>
+            <tr><td><code>SUB dirección</code></td><td>A ← A − M[dirección]</td></tr>
+            <tr><td><code>NOT</code></td><td>A ← NOT A</td></tr>
+            <tr><td><code>INC</code></td><td>A ← A + 1</td></tr>
+            <tr><td><code>DEC</code></td><td>A ← A − 1</td></tr>
+            <tr><td><code>SHFL</code></td><td>A ← A desplazado a la izquierda</td></tr>
+            <tr><td><code>SHFR</code></td><td>A ← A desplazado a la derecha</td></tr>
+            <tr><td><code>ROTR</code></td><td>A ← A rotado a la derecha</td></tr>
+            <tr><td rowspan="4" style="font-weight:600;color:var(--warn)">Entrada/Salida</td><td><code>IN A</code></td><td>A ← Puerto de entrada</td></tr>
+            <tr><td><code>OUT A</code></td><td>Puerto de salida ← A</td></tr>
+            <tr><td><code>HALT</code></td><td>Detener ejecución</td></tr>
+            <tr><td><code>NOP</code></td><td>No operación (avanza PC)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Problem 12.8 -->
+    <div class="problem-card">
+      <div class="problem-num">Problema 12.8 — VHDL del Microprocesador Expandido</div>
+      <p class="problem-text">Escribir el código VHDL conductual completo para el microprocesador del Problema 12.7 con el conjunto de instrucciones expandido. El diseño debe incluir todos los estados de la FSM, las operaciones de la ruta de datos y el manejo de memoria.</p>
+    <div class="figure-container">
+      <img src="img/Diagrama_ejercicio_12-08.png" alt="Diagrama ejercicio 12.8 - Expanded Datapath" loading="lazy">
+      <div class="fig-caption">Diagrama del ejercicio 12.7/12.8 — Ruta de datos expandida con Acumulador, Archivo de Registros, ALU, Shifter y MUX (del libro de texto)</div>
+    </div>
+    </div>
+  </section>
+
+  <!-- GLOSARIO -->
+  <section class="section" id="glosario">
+    <div class="section-label">Referencia</div>
+    <h2>Glosario de Términos</h2>
+    <div class="glossary-grid">
+      <dl class="glossary-item">
+        <dt>CPU</dt>
+        <dd>Unidad Central de Procesamiento. Componente principal que ejecuta instrucciones; compuesta por la unidad de control y la ruta de datos.</dd>
+      </dl>
+      <dl class="glossary-item">
+        <dt>ALU</dt>
+        <dd>Unidad Aritmético-Lógica. Circuito que realiza operaciones aritméticas (suma, resta) y lógicas (AND, OR) sobre los datos.</dd>
+      </dl>
+      <dl class="glossary-item">
+        <dt>ISA</dt>
+        <dd>Arquitectura del Conjunto de Instrucciones. Define las instrucciones que un procesador puede ejecutar, sus formatos y codificaciones.</dd>
+      </dl>
+      <dl class="glossary-item">
+        <dt>FSM</dt>
+        <dd>Máquina de Estados Finitos. Modelo de control con estados discretos y transiciones definidas por condiciones de entrada.</dd>
+      </dl>
+      <dl class="glossary-item">
+        <dt>PC (Program Counter)</dt>
+        <dd>Contador de Programa. Registro que almacena la dirección de la siguiente instrucción a ejecutar en memoria.</dd>
+      </dl>
+      <dl class="glossary-item">
+        <dt>IR (Instruction Register)</dt>
+        <dd>Registro de Instrucción. Almacena la instrucción actual leída de memoria durante la fase de Fetch.</dd>
+      </dl>
+      <dl class="glossary-item">
+        <dt>Opcode</dt>
+        <dd>Código de operación. Bits de la instrucción que identifican qué operación se debe realizar (ej: 3 bits → 8 operaciones).</dd>
+      </dl>
+      <dl class="glossary-item">
+        <dt>Datapath</dt>
+        <dd>Ruta de Datos. Conjunto de registros, multiplexores, ALU y buses que transportan y transforman los datos.</dd>
+      </dl>
+      <dl class="glossary-item">
+        <dt>VHDL</dt>
+        <dd>Lenguaje de Descripción de Hardware de Circuitos Integrados de Muy Alta Velocidad. Lenguaje para describir y simular circuitos digitales.</dd>
+      </dl>
+      <dl class="glossary-item">
+        <dt>FPGA</dt>
+        <dd>Arreglo de Compuertas Programable en Campo. Chip de hardware reconfigurable para implementar circuitos digitales personalizados.</dd>
+      </dl>
+      <dl class="glossary-item">
+        <dt>ROM / RAM</dt>
+        <dd>ROM: memoria de solo lectura para programa. RAM: memoria de lectura/escritura para datos y programa (EC-2).</dd>
+      </dl>
+      <dl class="glossary-item">
+        <dt>MIF</dt>
+        <dd>Memory Initialization File. Archivo de texto para inicializar el contenido de memorias ROM/RAM en herramientas de síntesis de Altera/Intel.</dd>
+      </dl>
+      <dl class="glossary-item">
+        <dt>Acumulador</dt>
+        <dd>Registro especial (A) donde se almacenan los resultados de operaciones aritméticas y el dato principal de trabajo.</dd>
+      </dl>
+      <dl class="glossary-item">
+        <dt>FSM+D</dt>
+        <dd>Modelo Estructural. Diseño que separa la máquina de estados (FSM) de la ruta de datos (D) como componentes independientes.</dd>
+      </dl>
+      <dl class="glossary-item">
+        <dt>FSMD</dt>
+        <dd>Modelo Conductual. Diseño que combina la máquina de estados con las operaciones de la ruta de datos en un solo proceso VHDL.</dd>
+      </dl>
+      <dl class="glossary-item">
+        <dt>Palabra de Control</dt>
+        <dd>Conjunto de bits generados por la unidad de control en cada estado que determinan las acciones de la ruta de datos.</dd>
+      </dl>
+      <dl class="glossary-item">
+        <dt>Flip-Flop D</dt>
+        <dd>Elemento de memoria básico usado en la implementación de la FSM. Almacena un bit y su entrada D se carga en cada flanco de reloj.</dd>
+      </dl>
+      <dl class="glossary-item">
+        <dt>Ecuación de Excitación</dt>
+        <dd>Expresión booleana que define la entrada D de cada flip-flop en función del estado actual y las entradas. Determina las transiciones de estado.</dd>
+      </dl>
+      <dl class="glossary-item">
+        <dt>One-Shot</dt>
+        <dd>Circuito que genera un único pulso de un ciclo de reloj al detectar el flanco de una señal. Usado para leer el botón Enter en el EC-2.</dd>
+      </dl>
+      <dl class="glossary-item">
+        <dt>UP2 (University Program 2)</dt>
+        <dd>Tarjeta de desarrollo de Altera con FPGA FLEX EPF10K70, DIP switches, LEDs de 7 segmentos y botones, usada para implementación en hardware.</dd>
+      </dl>
+    </div>
+  </section>
+
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+  <p>Diseño de Microprocesadores — Basado en <em>Digital Logic and Microprocessor Design with VHDL</em>, Capítulo 12</p>
+  <p style="margin-top:0.5rem">Material educativo para el curso de Arquitectura de Computadoras</p>
+</footer>
+
+<!-- Scroll to top button -->
+<button class="scroll-top" id="scrollTop" aria-label="Volver arriba">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 19V5m-7 7l7-7 7 7"/></svg>
+</button>
+
+<script>
+// Copy code functionality
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('.code-body');
+  const text = pre.textContent;
+  try {
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = '¡Copiado!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copiar';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  } catch {
+    // Fallback: select the text
+    const range = document.createRange();
+    range.selectNodeContents(pre);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    btn.textContent = 'Seleccionado';
+    setTimeout(() => { btn.textContent = 'Copiar'; }, 2000);
+  }
+}
+
+// Tab functionality
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + tab).classList.add('active');
+    try { localStorage.setItem('mp-tab', tab); } catch {}
+  });
+});
+
+// Restore tab
+try {
+  const saved = localStorage.getItem('mp-tab');
+  if (saved && document.getElementById('tab-' + saved)) {
+    document.getElementById('tab-' + saved).click();
+  }
+} catch {}
+
+// Scroll to top
+const scrollBtn = document.getElementById('scrollTop');
+let ticking = false;
+window.addEventListener('scroll', () => {
+  if (!ticking) {
+    requestAnimationFrame(() => {
+      scrollBtn.classList.toggle('visible', window.scrollY > 600);
+      ticking = false;
+    });
+    ticking = true;
+  }
+});
+scrollBtn.addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// Smooth scroll for nav links
+document.querySelectorAll('.nav-links a').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+</script>
+
+</body>
+</html>
