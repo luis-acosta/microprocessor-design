@@ -1,0 +1,31 @@
+-- Programa: Multiplicacion por Sumas Sucesivas
+-- Microprocesador EC-2
+-- Ejemplo: entrada A=5, B=4 -> salida = 20
+
+DEPTH = 32;
+WIDTH = 8;
+ADDRESS_RADIX = DEC;
+DATA_RADIX = BIN;
+
+CONTENT BEGIN
+  0  : 10000000;   -- IN              A <- entrada (multiplicando)
+  1  : 00111110;   -- STORE 30        M[30] <- multiplicando
+  2  : 10000000;   -- IN              A <- entrada (multiplicador)
+  3  : 00111111;   -- STORE 31        M[31] <- multiplicador
+  4  : 00011101;   -- LOAD 29         A <- 0
+  5  : 00111100;   -- STORE 28        M[28] <- 0 (resultado)
+  6  : 00011111;   -- LOAD 31         A <- contador
+  7  : 10101111;   -- JZ 15           si A=0 ir a DONE
+  8  : 00011100;   -- LOAD 28         A <- resultado
+  9  : 01011110;   -- ADD 30          A <- resultado + multiplicando
+  10 : 00111100;   -- STORE 28        M[28] <- resultado
+  11 : 00011111;   -- LOAD 31         A <- contador
+  12 : 01111011;   -- SUB 27          A <- contador - 1
+  13 : 00111111;   -- STORE 31        M[31] <- contador
+  14 : 11000110;   -- JPOS 6          si A>0 volver al bucle
+  15 : 00011100;   -- LOAD 28         A <- resultado final
+  16 : 11100000;   -- HALT            resultado en output
+  [17..26] : 00000000;  -- No usado
+  27 : 00000001;   -- Constante 1
+  [28..31] : 00000000;  -- Variables (resultado, cero, A, B)
+END;

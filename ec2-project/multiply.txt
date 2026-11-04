@@ -1,0 +1,73 @@
+; ==========================================================
+; Programa: Multiplicacion por Sumas Sucesivas
+; Microprocesador EC-2 (8 instrucciones, 8 bits)
+; ==========================================================
+;
+; Algoritmo: resultado = A x B
+;   1. Leer multiplicando (A) desde entrada
+;   2. Leer multiplicador (B) desde entrada
+;   3. resultado = 0
+;   4. Repetir B veces: resultado = resultado + A
+;   5. Mostrar resultado en salida (acumulador) y detener
+;
+; Ejemplo: A=5, B=4 -> resultado = 5+5+5+5 = 20
+;
+; Mapa de memoria:
+;   Dir 0-16:  Instrucciones del programa
+;   Dir 27:    Constante 1 (para decrementar contador)
+;   Dir 28:    Variable resultado (acumulador de la suma)
+;   Dir 29:    (reservada, inicializada a 0)
+;   Dir 30:    Variable multiplicando (A)
+;   Dir 31:    Variable multiplicador / contador (B)
+;
+; Set de instrucciones EC-2:
+;   000 LOAD d    A <- RAM[d]
+;   001 STORE d   RAM[d] <- A
+;   010 ADD d     A <- A + RAM[d]
+;   011 SUB d     A <- A - RAM[d]
+;   100 IN        A <- entrada del usuario
+;   101 JZ d      si A=0 salta a d
+;   110 JPOS d    si A>0 salta a d
+;   111 HALT      detiene ejecucion
+; ==========================================================
+
+; --- Lectura de operandos ---
+0:   IN              ; A <- entrada (multiplicando)
+1:   STORE 30        ; M[30] <- A (guardar multiplicando)
+2:   IN              ; A <- entrada (multiplicador)
+3:   STORE 31        ; M[31] <- A (guardar multiplicador/contador)
+
+; --- Inicializar resultado a cero ---
+4:   LOAD 29         ; A <- 0 (M[29] = 0)
+5:   STORE 28        ; M[28] <- 0 (resultado = 0)
+
+; --- Inicio del bucle (dir 6) ---
+6:   LOAD 31         ; A <- contador
+7:   JZ 15           ; si contador = 0, saltar a DONE (dir 15)
+
+; --- Cuerpo del bucle: resultado += multiplicando ---
+8:   LOAD 28         ; A <- resultado
+9:   ADD 30          ; A <- resultado + multiplicando
+10:  STORE 28        ; M[28] <- nuevo resultado
+
+; --- Decrementar contador ---
+11:  LOAD 31         ; A <- contador
+12:  SUB 27          ; A <- contador - 1
+13:  STORE 31        ; M[31] <- nuevo contador
+
+; --- Volver al inicio del bucle ---
+14:  JPOS 6          ; si contador > 0, volver al bucle
+                     ; si contador = 0, caer a DONE
+
+; --- Resultado final ---
+15:  LOAD 28         ; A <- resultado (visible en salida)
+16:  HALT            ; Detener -- resultado en el puerto output
+
+; ==========================================================
+; Datos pre-cargados en RAM:
+; Dir 27 = 00000001 (constante 1)
+; Dir 28 = 00000000 (resultado, inicialmente 0)
+; Dir 29 = 00000000 (constante 0)
+; Dir 30 = 00000000 (multiplicando, se escribe con IN)
+; Dir 31 = 00000000 (multiplicador, se escribe con IN)
+; ==========================================================

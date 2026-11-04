@@ -152,8 +152,9 @@ BEGIN
   );
 
   -- U6: MUX 4:1 — Selección de entrada al acumulador
+  -- Asel="00"→D0=RAMQ(LOAD), "01"→D1=AddSub(ADD/SUB), "10"→D2=Input(IN)
   U6: mux4 GENERIC MAP(8) PORT MAP(
-    Asel, dp_RAMQ, dp_RAMQ, Input, dp_addsub, dp_Amux);
+    Asel, dp_RAMQ, Input, dp_addsub, dp_RAMQ, dp_Amux);
 
   -- U7: Acumulador A — Registro de 8 bits
   U7: reg GENERIC MAP(8) PORT MAP(
