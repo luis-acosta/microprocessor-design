@@ -35,22 +35,25 @@ ARCHITECTURE Behavioral OF ram IS
   -- Direcciones restantes: datos (inicializados a "00000000")
   -- =====================================================
   CONSTANT INIT : memory_array := (
-    -- Dir  Instrucción      Descripción
-    0  => "10000000",   -- IN   A              ; A ← entrada del usuario (primer número)
-    1  => "00111110",   -- STORE M[30]         ; M[30] ← A (guardar X)
-    2  => "10000000",   -- IN   A              ; A ← entrada del usuario (segundo número)
-    3  => "00111111",   -- STORE M[31]         ; M[31] ← A (guardar Y)
-    4  => "11001011",   -- JZERO 11            ; si A=0, saltar a 11 (fin)
-    5  => "01011111",   -- SUB  M[31]          ; A ← A - Y
-    6  => "11101011",   -- JPOS 11             ; si A>0, saltar a 11 (X>Y resuelto)
-    7  => "00011111",   -- LOAD M[31]          ; A ← Y
-    8  => "01011110",   -- SUB  M[30]          ; A ← Y - X
-    9  => "00111111",   -- STORE M[31]         ; M[31] ← nuevo Y
-    10 => "00011110",   -- LOAD M[30]          ; A ← X
-    11 => "11000100",   -- JZERO 4             ; volver al loop
-    12 => "00011110",   -- LOAD M[30]          ; A ← resultado (GCD)
-    13 => "11100000",   -- JPOS 0              ; saltar a 0 (reiniciar) — o HALT
-    OTHERS => "00000000"    -- Resto de la memoria inicializada a 0 (datos)
+    -- Dir  Binario       Instrucción       Descripción
+    -- ===================== Programa GCD por restas sucesivas =====================
+    0  => "10000000",   -- IN                ; A ← entrada (primer número)
+    1  => "00111100",   -- STORE 28          ; M[28] ← a
+    2  => "10000000",   -- IN                ; A ← entrada (segundo número)
+    3  => "00111101",   -- STORE 29          ; M[29] ← b
+    4  => "00011100",   -- LOAD 28           ; A ← a              [LOOP]
+    5  => "01111101",   -- SUB 29            ; A ← a - b
+    6  => "10101110",   -- JZ 14             ; si a==b → DONE
+    7  => "11001100",   -- JPOS 12           ; si a>b  → A_GT_B
+    8  => "00011101",   -- LOAD 29           ; A ← b              [B_GT_A]
+    9  => "01111100",   -- SUB 28            ; A ← b - a
+    10 => "00111101",   -- STORE 29          ; M[29] ← nuevo b
+    11 => "11000100",   -- JPOS 4            ; → LOOP
+    12 => "00111100",   -- STORE 28          ; M[28] ← a-b        [A_GT_B]
+    13 => "11000100",   -- JPOS 4            ; → LOOP
+    14 => "00011100",   -- LOAD 28           ; A ← GCD            [DONE]
+    15 => "11100000",   -- HALT              ; Fin del programa
+    OTHERS => "00000000"    -- Resto: datos (M[28]=a, M[29]=b)
   );
 
   -- Señal interna de la memoria (inicializada con INIT)

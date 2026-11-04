@@ -11,7 +11,11 @@ END mp_tb;
 
 ARCHITECTURE test OF mp_tb IS
 
-  COMPONENT mp PORT(
+  COMPONENT mp
+  GENERIC(
+    INIT_FILE : STRING := "multiply.mem"
+  );
+  PORT(
     clock, reset, enter : IN  STD_LOGIC;
     input               : IN  STD_LOGIC_VECTOR(7 DOWNTO 0);
     output              : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)

@@ -10,8 +10,12 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 -- NO se necesita LIBRARY lpm ni USE lpm.lpm_components.ALL
 
-ENTITY dp IS PORT(
-  Clock, Clear           : IN  STD_LOGIC;             -- Reloj del sistema y reset asíncrono
+ENTITY dp IS
+GENERIC(
+  INIT_FILE : STRING := "gcd.mem"  -- No usado (programa hardcoded en ram.vhd)
+);
+PORT(
+  Clock, reset           : IN  STD_LOGIC;             -- Reloj del sistema y reset asíncrono
   -- Entrada de datos del usuario (8 DIP switches)
   Input                  : IN  STD_LOGIC_VECTOR(7 DOWNTO 0);
   -- Señales de control provenientes de la Unidad de Control (CU)
@@ -116,7 +120,7 @@ BEGIN
 
   -- U0: Registro de Instrucción (IR) — 8 bits
   U0: reg GENERIC MAP(8) PORT MAP(
-    Clock, Clear, IRLoad, dp_RAMQ, dp_IR);
+    Clock, reset, IRLoad, dp_RAMQ, dp_IR);
   IR <= dp_IR(7 DOWNTO 5);  -- Enviar opcode a la CU
 
   -- U1: JMPmux — MUX 2:1 de 5 bits
@@ -125,7 +129,7 @@ BEGIN
 
   -- U2: Contador de Programa (PC) — 5 bits
   U2: reg GENERIC MAP(5) PORT MAP(
-    Clock, Clear, PCLoad, dp_JMPmux, dp_PC);
+    Clock, reset, PCLoad, dp_JMPmux, dp_PC);
 
   -- U3: Meminst MUX — MUX 2:1 de 5 bits
   U3: mux2 GENERIC MAP(5) PORT MAP(
@@ -158,7 +162,7 @@ BEGIN
 
   -- U7: Acumulador A — Registro de 8 bits
   U7: reg GENERIC MAP(8) PORT MAP(
-    Clock, Clear, ALoad, dp_Amux, dp_A);
+    Clock, reset, ALoad, dp_Amux, dp_A);
 
   -- U8: Sumador/Restador de 8 bits
   U8: addsub GENERIC MAP(8) PORT MAP(

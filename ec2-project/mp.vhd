@@ -1,7 +1,11 @@
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 
-ENTITY mp IS PORT(
+ENTITY mp IS
+GENERIC(
+  INIT_FILE : STRING := "multiply.mem"  -- Archivo con el programa (para dp_file.vhd)
+);
+PORT(
   clock, reset, enter : IN  STD_LOGIC;
   input                : IN  STD_LOGIC_VECTOR(7 DOWNTO 0);
   output               : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
@@ -22,7 +26,11 @@ ARCHITECTURE Structural OF mp IS
   );
   END COMPONENT;
 
-  COMPONENT dp PORT(
+  COMPONENT dp
+  GENERIC(
+    INIT_FILE : STRING := "multiply.mem"
+  );
+  PORT(
     clock, reset          : IN  STD_LOGIC;
     input                 : IN  STD_LOGIC_VECTOR(7 DOWNTO 0);
     IRload, JMPmux, PCload: IN  STD_LOGIC;
@@ -58,7 +66,7 @@ BEGIN
   -- Instancia de la Ruta de Datos (Datapath)
   -- Recibe: reloj, reset, entrada de datos, 8 señales de control
   -- Genera: opcode (IRsig), banderas (Aeq0, Apos), salida de datos
-  U2: dp PORT MAP(
+  U2: dp GENERIC MAP(INIT_FILE => INIT_FILE) PORT MAP(
     clock, reset, input,
     IRload_s, JMPmux_s, PCload_s,
     Meminst_s, MemWr_s,

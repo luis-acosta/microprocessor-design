@@ -10,7 +10,11 @@ USE IEEE.std_logic_1164.ALL;
 -- NOTA: misma entity "dp" para ser intercambiable con dp.vhd
 -- Al compilar, usar dp_file.vhd en lugar de dp.vhd
 
-ENTITY dp IS PORT(
+ENTITY dp IS
+GENERIC(
+  INIT_FILE : STRING := "multiply.mem"  -- Archivo con el programa a cargar
+);
+PORT(
   Clock, reset           : IN  STD_LOGIC;             -- Reloj del sistema y reset asíncrono
   -- Entrada de datos del usuario (8 DIP switches)
   Input                  : IN  STD_LOGIC_VECTOR(7 DOWNTO 0);
@@ -142,7 +146,7 @@ BEGIN
   GENERIC MAP(
     ADDR_WIDTH => 5,          -- 5 bits de dirección → 32 posiciones
     DATA_WIDTH => 8,          -- 8 bits de ancho de palabra
-    INIT_FILE  => "multiply.mem"  -- ← Archivo con el programa
+    INIT_FILE  => INIT_FILE      -- Usa el genérico de la entidad dp
   )
   PORT MAP(
     clock   => Clock,       -- Reloj para escritura síncrona
