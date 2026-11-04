@@ -1,0 +1,25 @@
+-- Programa: Máximo Común Divisor (Algoritmo de Euclides)
+-- Variables: x en dir 11110 (30), y en dir 11111 (31)
+
+ 0:  IN    A            -- Leer primer número (x)
+ 1:  STORE 30           -- Guardar como x
+ 2:  IN    A            -- Leer segundo número (y)
+ 3:  STORE 31           -- Guardar como y
+-- loop:
+ 4:  LOAD  30           -- A ← x
+ 5:  SUB   31           -- A ← x - y
+ 6:  JZ    16           -- Si x = y → salir (GCD encontrado)
+ 7:  JPOS  12           -- Si x > y → ir a x_mayor
+-- y_mayor: y ← y - x
+ 8:  LOAD  31           -- A ← y
+ 9:  SUB   30           -- A ← y - x
+10:  STORE 31           -- y ← resultado
+11:  JPOS  4            -- Volver al loop (siempre positivo)
+-- x_mayor: x ← x - y
+12:  LOAD  30           -- A ← x
+13:  SUB   31           -- A ← x - y
+14:  STORE 30           -- x ← resultado
+15:  JPOS  4            -- Volver al loop
+-- salir:
+16:  LOAD  30           -- A ← x (= GCD)
+17:  HALT              -- Fin — resultado en OUTPUT
