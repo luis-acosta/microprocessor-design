@@ -1,0 +1,30 @@
+-- Programa: Máximo Común Divisor (GCD)
+-- Microprocesador EC-2
+-- Algoritmo de Euclides por restas sucesivas
+-- Ejemplo: GCD(12, 8) = 4
+
+DEPTH = 32;
+WIDTH = 8;
+ADDRESS_RADIX = DEC;
+DATA_RADIX = BIN;
+
+CONTENT BEGIN
+  0  : 10000000;   -- IN              A <- entrada (número 1)
+  1  : 00111100;   -- STORE 28        M[28] <- a
+  2  : 10000000;   -- IN              A <- entrada (número 2)
+  3  : 00111101;   -- STORE 29        M[29] <- b
+  4  : 00011100;   -- LOAD 28         A <- a          [LOOP]
+  5  : 01111101;   -- SUB 29          A <- a - b
+  6  : 10101110;   -- JZ 14           si a==b ir a DONE
+  7  : 11001100;   -- JPOS 12         si a>b ir a A_GT_B
+  8  : 00011101;   -- LOAD 29         A <- b          [B_GT_A]
+  9  : 01111100;   -- SUB 28          A <- b - a
+  10 : 00111101;   -- STORE 29        M[29] <- b-a
+  11 : 11000100;   -- JPOS 4          ir a LOOP
+  12 : 00111100;   -- STORE 28        M[28] <- a-b    [A_GT_B]
+  13 : 11000100;   -- JPOS 4          ir a LOOP
+  14 : 00011100;   -- LOAD 28         A <- GCD        [DONE]
+  15 : 11100000;   -- HALT
+  [16..27] : 00000000;  -- No usado
+  [28..31] : 00000000;  -- Variables (a, b)
+END;

@@ -1,0 +1,93 @@
+-- =====================================================
+-- Programa: Máximo Común Divisor (GCD)
+-- Microprocesador EC-2
+-- Algoritmo: Restas sucesivas (Euclides)
+-- =====================================================
+--
+-- Algoritmo:
+--   Entrada: a, b (dos números positivos)
+--   Mientras a ≠ b:
+--     Si a > b: a = a - b
+--     Si b > a: b = b - a
+--   Salida: a (= b = GCD)
+--
+-- Ejemplo: GCD(12, 8)
+--   12 - 8 = 4  → a=4, b=8
+--   8 - 4  = 4  → a=4, b=4
+--   a == b → GCD = 4
+--
+-- =====================================================
+-- Set de instrucciones EC-2:
+--   000 LOAD d   : A ← M[d]
+--   001 STORE d  : M[d] ← A
+--   010 ADD d    : A ← A + M[d]
+--   011 SUB d    : A ← A - M[d]
+--   100 IN       : A ← Input (espera Enter)
+--   101 JZ d     : si A=0, PC ← d
+--   110 JPOS d   : si A>0 (MSB=0 y A≠0), PC ← d
+--   111 HALT     : detener ejecución
+-- =====================================================
+--
+-- Mapa de memoria:
+--   [0-15]  : Instrucciones del programa
+--   [16-27] : No usado
+--   [28]    : Variable a
+--   [29]    : Variable b
+--   [30-31] : No usado
+--
+-- =====================================================
+-- Dir | Binario    | Ensamblador     | Comentario
+-- =====================================================
+--  0  | 10000000   | IN              | A ← entrada (número 1)
+--  1  | 00111100   | STORE 28        | M[28] ← a
+--  2  | 10000000   | IN              | A ← entrada (número 2)
+--  3  | 00111101   | STORE 29        | M[29] ← b
+--                                    |
+--     |            |     [LOOP]      |
+--  4  | 00011100   | LOAD 28         | A ← a
+--  5  | 01111101   | SUB 29          | A ← a - b
+--  6  | 10101110   | JZ 14           | si a==b → DONE
+--  7  | 11001100   | JPOS 12         | si a>b → A_GT_B
+--                                    |
+--     |            |     [B_GT_A]    |
+--  8  | 00011101   | LOAD 29         | A ← b
+--  9  | 01111100   | SUB 28          | A ← b - a
+-- 10  | 00111101   | STORE 29        | M[29] ← b-a (nuevo b)
+-- 11  | 11000100   | JPOS 4          | → LOOP (b-a>0 siempre)
+--                                    |
+--     |            |     [A_GT_B]    |
+-- 12  | 00111100   | STORE 28        | M[28] ← a-b (nuevo a)
+-- 13  | 11000100   | JPOS 4          | → LOOP (a-b>0 siempre)
+--                                    |
+--     |            |     [DONE]      |
+-- 14  | 00011100   | LOAD 28         | A ← GCD (visible en output)
+-- 15  | 11100000   | HALT            | Detener
+-- =====================================================
+--
+-- Traza de ejecución con GCD(12, 8):
+--
+-- Iteración 1: a=12, b=8
+--   LOAD 28  → A=12
+--   SUB 29   → A=12-8=4  (positivo, no cero)
+--   JZ 14    → no salta
+--   JPOS 12  → salta (A>0)
+--   STORE 28 → M[28]=4   (nuevo a=4)
+--   JPOS 4   → salta al LOOP
+--
+-- Iteración 2: a=4, b=8
+--   LOAD 28  → A=4
+--   SUB 29   → A=4-8=-4  (negativo, Apos=0)
+--   JZ 14    → no salta
+--   JPOS 12  → no salta (A<0)
+--   LOAD 29  → A=8
+--   SUB 28   → A=8-4=4   (positivo)
+--   STORE 29 → M[29]=4   (nuevo b=4)
+--   JPOS 4   → salta al LOOP
+--
+-- Iteración 3: a=4, b=4
+--   LOAD 28  → A=4
+--   SUB 29   → A=4-4=0   (cero!)
+--   JZ 14    → salta a DONE
+--   LOAD 28  → A=4       (GCD = 4)
+--   HALT
+-- =====================================================
