@@ -1,3 +1,10 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
 <title>Microprocesadores EC-1 y EC-2</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 
@@ -840,6 +847,7 @@ td code {
       <li><a href="#procesadores">EC-1 / EC-2</a></li>
       <li><a href="#vhdl">Código VHDL</a></li>
       <li><a href="#programas">Programas</a></li>
+      <li><a href="#gcd">GCD</a></li>
       <li><a href="#resumen">Resumen</a></li>
       <li><a href="#problemas">Problemas</a></li>
       <li><a href="#glosario">Glosario</a></li>
@@ -2665,6 +2673,351 @@ ec2_portable/<br>
 <span class="num">17:</span>  <span class="kw">LOAD</span>  <span class="num">30</span>           <span class="cm">-- A ← conteo total</span>
 <span class="num">18:</span>  <span class="kw">HALT</span>              <span class="cm">-- Fin</span></pre>
     </div>
+
+    <!-- GCD: MÁXIMO COMÚN DIVISOR -->
+    <h3 id="gcd">Programa GCD: Máximo Común Divisor (Algoritmo de Euclides)</h3>
+    <p>Calcula el GCD de dos números usando <strong>restas sucesivas</strong>: mientras <em>a ≠ b</em>, resta el menor del mayor. Cuando son iguales, ese valor es el GCD.</p>
+
+    <div style="background:var(--surface);border-radius:12px;padding:1.5rem;margin:1.5rem 0;border:1px solid var(--border)">
+      <div style="font-weight:600;color:var(--accent);margin-bottom:0.75rem">Algoritmo de Euclides por restas sucesivas</div>
+      <pre style="margin:0;font-family:var(--mono);font-size:0.92rem;line-height:1.6;color:var(--fg)"><span class="kw">Entrada:</span> a, b  (dos números positivos)
+<span class="kw">Mientras</span> a ≠ b:
+    <span class="kw">Si</span> a &gt; b:  a ← a − b
+    <span class="kw">Si</span> b &gt; a:  b ← b − a
+<span class="kw">Salida:</span> a  <span class="cm">(= b = GCD)</span>
+
+<span class="cm">Ejemplo: GCD(12, 8)</span>
+  12 − 8 = 4  → a=4, b=8
+  8 − 4  = 4  → a=4, b=4
+  a == b      → <span class="kw">GCD = 4</span></pre>
+    </div>
+
+    <!-- DIAGRAMA DE TIEMPOS -->
+    <h4 style="margin-top:2.5rem">Diagrama de Tiempos — Ingreso de Datos</h4>
+    <p>El siguiente diagrama muestra las señales del microprocesador EC-2 durante la fase de entrada de datos para el programa GCD(12, 8). Se observan los <strong>pulsos de reloj</strong>, la señal de <strong>reset</strong>, el <strong>bus de datos</strong> de entrada, la señal <strong>enter</strong> y los <strong>estados de la FSM</strong>.</p>
+
+    <div style="overflow-x:auto;margin:1.5rem 0">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 420" style="width:100%;max-width:960px;min-width:700px;height:auto;font-family:var(--mono,'Fira Code',monospace)">
+        <defs>
+          <style>
+            .sig-label { font-size: 11px; fill: var(--fg, #333); font-weight: 600; }
+            .sig-line { stroke: var(--accent, #2563eb); stroke-width: 1.8; fill: none; }
+            .sig-rst { stroke: #e74c3c; stroke-width: 1.8; fill: none; }
+            .sig-ent { stroke: #27ae60; stroke-width: 1.8; fill: none; }
+            .sig-bus { stroke: var(--accent2, #7c3aed); stroke-width: 1.5; fill: none; }
+            .bus-fill { fill: var(--accent2, #7c3aed); opacity: 0.08; }
+            .bus-text { font-size: 9.5px; fill: var(--accent2, #7c3aed); font-weight: 600; text-anchor: middle; }
+            .state-box { fill: var(--accent, #2563eb); opacity: 0.12; rx: 3; }
+            .state-text { font-size: 8.5px; fill: var(--accent, #2563eb); font-weight: 600; text-anchor: middle; }
+            .cycle-num { font-size: 8px; fill: var(--muted, #999); text-anchor: middle; }
+            .grid-line { stroke: var(--border, #e5e5e5); stroke-width: 0.5; stroke-dasharray: 2,3; }
+            .annot { font-size: 9px; fill: var(--fg, #333); font-weight: 500; }
+            .annot-line { stroke: var(--muted, #999); stroke-width: 0.8; stroke-dasharray: 3,2; }
+            .annot-accent { font-size: 9.5px; fill: var(--accent, #2563eb); font-weight: 700; }
+            .title-text { font-size: 12px; fill: var(--fg, #333); font-weight: 700; }
+            .sig-out { stroke: #e67e22; stroke-width: 1.8; fill: none; }
+            .out-fill { fill: #e67e22; opacity: 0.08; }
+            .out-text { font-size: 9.5px; fill: #e67e22; font-weight: 600; text-anchor: middle; }
+          </style>
+        </defs>
+
+        <!-- Title -->
+        <text x="480" y="18" text-anchor="middle" class="title-text">Diagrama de Tiempos — Ingreso de Datos para GCD(12, 8)</text>
+
+        <!-- Column layout: labels at x=0-80, waveforms at x=90-940 -->
+        <!-- Each cycle = 34px, showing 25 cycles: 90 + 25*34 = 940 -->
+        <!-- Rows: Clock(y=50), Reset(y=110), Estado(y=165), Input(y=220), Enter(y=290), Output(y=350) -->
+
+        <!-- Vertical grid lines (every clock cycle rising edge) -->
+        <!-- Reset cycles 1-3 (edges at 10,30,50ns → cycle positions) -->
+        <!-- Cycle 1 starts at x=90 -->
+        <g>
+          <line x1="90" y1="30" x2="90" y2="400" class="grid-line"/>
+          <line x1="124" y1="30" x2="124" y2="400" class="grid-line"/>
+          <line x1="158" y1="30" x2="158" y2="400" class="grid-line"/>
+          <line x1="192" y1="30" x2="192" y2="400" class="grid-line"/>
+          <line x1="226" y1="30" x2="226" y2="400" class="grid-line"/>
+          <line x1="260" y1="30" x2="260" y2="400" class="grid-line"/>
+          <line x1="294" y1="30" x2="294" y2="400" class="grid-line"/>
+          <line x1="328" y1="30" x2="328" y2="400" class="grid-line"/>
+          <line x1="362" y1="30" x2="362" y2="400" class="grid-line"/>
+          <line x1="396" y1="30" x2="396" y2="400" class="grid-line"/>
+          <line x1="430" y1="30" x2="430" y2="400" class="grid-line"/>
+          <line x1="464" y1="30" x2="464" y2="400" class="grid-line"/>
+          <line x1="498" y1="30" x2="498" y2="400" class="grid-line"/>
+          <line x1="532" y1="30" x2="532" y2="400" class="grid-line"/>
+          <line x1="566" y1="30" x2="566" y2="400" class="grid-line"/>
+          <line x1="600" y1="30" x2="600" y2="400" class="grid-line"/>
+          <line x1="634" y1="30" x2="634" y2="400" class="grid-line"/>
+          <line x1="668" y1="30" x2="668" y2="400" class="grid-line"/>
+          <line x1="702" y1="30" x2="702" y2="400" class="grid-line"/>
+          <line x1="736" y1="30" x2="736" y2="400" class="grid-line"/>
+          <line x1="770" y1="30" x2="770" y2="400" class="grid-line"/>
+          <line x1="804" y1="30" x2="804" y2="400" class="grid-line"/>
+          <line x1="838" y1="30" x2="838" y2="400" class="grid-line"/>
+          <line x1="872" y1="30" x2="872" y2="400" class="grid-line"/>
+          <line x1="906" y1="30" x2="906" y2="400" class="grid-line"/>
+          <line x1="940" y1="30" x2="940" y2="400" class="grid-line"/>
+        </g>
+
+        <!-- Cycle numbers -->
+        <g>
+          <text x="107" y="408" class="cycle-num">1</text>
+          <text x="141" y="408" class="cycle-num">2</text>
+          <text x="175" y="408" class="cycle-num">3</text>
+          <text x="209" y="408" class="cycle-num">4</text>
+          <text x="243" y="408" class="cycle-num">5</text>
+          <text x="277" y="408" class="cycle-num">6</text>
+          <text x="311" y="408" class="cycle-num">7</text>
+          <text x="345" y="408" class="cycle-num">8</text>
+          <text x="379" y="408" class="cycle-num">9</text>
+          <text x="413" y="408" class="cycle-num">10</text>
+          <text x="447" y="408" class="cycle-num">11</text>
+          <text x="481" y="408" class="cycle-num">12</text>
+          <text x="515" y="408" class="cycle-num">13</text>
+          <text x="549" y="408" class="cycle-num">14</text>
+          <text x="583" y="408" class="cycle-num">15</text>
+          <text x="617" y="408" class="cycle-num">16</text>
+          <text x="651" y="408" class="cycle-num">17</text>
+          <text x="685" y="408" class="cycle-num">18</text>
+          <text x="719" y="408" class="cycle-num">19</text>
+          <text x="753" y="408" class="cycle-num">20</text>
+          <text x="787" y="408" class="cycle-num">21</text>
+          <text x="821" y="408" class="cycle-num">22</text>
+          <text x="855" y="408" class="cycle-num">23</text>
+          <text x="889" y="408" class="cycle-num">24</text>
+          <text x="923" y="408" class="cycle-num">25</text>
+        </g>
+
+        <!-- ==================== CLOCK SIGNAL (y=40-70) ==================== -->
+        <text x="5" y="58" class="sig-label">Clock</text>
+        <!-- 25 cycles of square wave, each 34px wide (17px low, 17px high) -->
+        <polyline class="sig-line" points="
+          90,65 90,40 107,40 107,65 124,65 124,40 141,40 141,65 158,65 158,40 175,40 175,65
+          192,65 192,40 209,40 209,65 226,65 226,40 243,40 243,65 260,65 260,40 277,40 277,65
+          294,65 294,40 311,40 311,65 328,65 328,40 345,40 345,65 362,65 362,40 379,40 379,65
+          396,65 396,40 413,40 413,65 430,65 430,40 447,40 447,65 464,65 464,40 481,40 481,65
+          498,65 498,40 515,40 515,65 532,65 532,40 549,40 549,65 566,65 566,40 583,40 583,65
+          600,65 600,40 617,40 617,65 634,65 634,40 651,40 651,65 668,65 668,40 685,40 685,65
+          702,65 702,40 719,40 719,65 736,65 736,40 753,40 753,65 770,65 770,40 787,40 787,65
+          804,65 804,40 821,40 821,65 838,65 838,40 855,40 855,65 872,65 872,40 889,40 889,65
+          906,65 906,40 923,40 923,65 940,65
+        "/>
+
+        <!-- ==================== RESET SIGNAL (y=95-125) ==================== -->
+        <text x="5" y="113" class="sig-label">Reset</text>
+        <!-- High for 3 cycles (90-192), then low -->
+        <polyline class="sig-rst" points="
+          90,100 192,100 192,120 940,120
+        "/>
+
+        <!-- ==================== FSM STATE (y=145-180) ==================== -->
+        <text x="5" y="160" class="sig-label">Estado</text>
+        <text x="5" y="172" class="sig-label">FSM</text>
+        <!-- Reset: s_start for cycles 1-3 -->
+        <rect x="90" y="148" width="102" height="20" class="state-box"/>
+        <text x="141" y="162" class="state-text">s_start</text>
+        <!-- Cycle 4: s_start -->
+        <rect x="192" y="148" width="34" height="20" class="state-box"/>
+        <text x="209" y="162" class="state-text">start</text>
+        <!-- Cycle 5: s_fetch (IN@0) -->
+        <rect x="226" y="148" width="34" height="20" style="fill:#27ae60;opacity:0.15;rx:3"/>
+        <text x="243" y="162" style="font-size:8.5px;fill:#27ae60;font-weight:600;text-anchor:middle">fetch</text>
+        <!-- Cycle 6: s_decode -->
+        <rect x="260" y="148" width="34" height="20" style="fill:#e67e22;opacity:0.15;rx:3"/>
+        <text x="277" y="162" style="font-size:8.5px;fill:#e67e22;font-weight:600;text-anchor:middle">dec</text>
+        <!-- Cycles 7-9: s_input (waiting) -->
+        <rect x="294" y="148" width="102" height="20" style="fill:#e74c3c;opacity:0.12;rx:3"/>
+        <text x="345" y="162" style="font-size:8.5px;fill:#e74c3c;font-weight:600;text-anchor:middle">s_input (esperando Enter)</text>
+        <!-- Cycle 10: s_input → s_start (enter accepted) -->
+        <rect x="396" y="148" width="34" height="20" class="state-box"/>
+        <text x="413" y="162" class="state-text">start</text>
+        <!-- Cycle 11: s_fetch (STORE 28) -->
+        <rect x="430" y="148" width="34" height="20" style="fill:#27ae60;opacity:0.15;rx:3"/>
+        <text x="447" y="162" style="font-size:8.5px;fill:#27ae60;font-weight:600;text-anchor:middle">fetch</text>
+        <!-- Cycle 12: s_decode -->
+        <rect x="464" y="148" width="34" height="20" style="fill:#e67e22;opacity:0.15;rx:3"/>
+        <text x="481" y="162" style="font-size:8.5px;fill:#e67e22;font-weight:600;text-anchor:middle">dec</text>
+        <!-- Cycle 13: s_store -->
+        <rect x="498" y="148" width="34" height="20" style="fill:#9b59b6;opacity:0.15;rx:3"/>
+        <text x="515" y="162" style="font-size:8.5px;fill:#9b59b6;font-weight:600;text-anchor:middle">store</text>
+        <!-- Cycle 14: s_start -->
+        <rect x="532" y="148" width="34" height="20" class="state-box"/>
+        <text x="549" y="162" class="state-text">start</text>
+        <!-- Cycle 15: s_fetch (IN@2) -->
+        <rect x="566" y="148" width="34" height="20" style="fill:#27ae60;opacity:0.15;rx:3"/>
+        <text x="583" y="162" style="font-size:8.5px;fill:#27ae60;font-weight:600;text-anchor:middle">fetch</text>
+        <!-- Cycle 16: s_decode -->
+        <rect x="600" y="148" width="34" height="20" style="fill:#e67e22;opacity:0.15;rx:3"/>
+        <text x="617" y="162" style="font-size:8.5px;fill:#e67e22;font-weight:600;text-anchor:middle">dec</text>
+        <!-- Cycles 17-22: s_input (waiting for second enter) -->
+        <rect x="634" y="148" width="170" height="20" style="fill:#e74c3c;opacity:0.12;rx:3"/>
+        <text x="719" y="162" style="font-size:8.5px;fill:#e74c3c;font-weight:600;text-anchor:middle">s_input (esperando Enter)</text>
+        <!-- Cycle 23: s_start -->
+        <rect x="804" y="148" width="34" height="20" class="state-box"/>
+        <text x="821" y="162" class="state-text">start</text>
+        <!-- Cycles 24-25: computation -->
+        <rect x="838" y="148" width="102" height="20" style="fill:#27ae60;opacity:0.1;rx:3"/>
+        <text x="889" y="162" style="font-size:8.5px;fill:#27ae60;font-weight:600;text-anchor:middle">→ cálculo GCD...</text>
+
+        <!-- ==================== INPUT[7:0] BUS (y=200-240) ==================== -->
+        <text x="5" y="218" class="sig-label">Input</text>
+        <text x="5" y="230" class="sig-label">[7:0]</text>
+        <!-- Initial value: 00000000 (cycles 1-7) -->
+        <rect x="90" y="205" width="204" height="25" class="bus-fill"/>
+        <polygon class="sig-bus" points="90,217 98,205 286,205 294,217 286,230 98,230 90,217"/>
+        <text x="192" y="221" class="bus-text">00000000 (0)</text>
+        <!-- Value changes to 12 = 00001100 at cycle 8 -->
+        <rect x="294" y="205" width="340" height="25" class="bus-fill"/>
+        <polygon class="sig-bus" points="294,217 302,205 626,205 634,217 626,230 302,230 294,217"/>
+        <text x="464" y="221" class="bus-text">00001100 (12)</text>
+        <!-- Value changes to 8 = 00001000 at cycle 18 -->
+        <rect x="634" y="205" width="306" height="25" class="bus-fill"/>
+        <polygon class="sig-bus" points="634,217 642,205 932,205 940,217 932,230 642,230 634,217"/>
+        <text x="787" y="221" class="bus-text">00001000 (8)</text>
+
+        <!-- ==================== ENTER SIGNAL (y=265-295) ==================== -->
+        <text x="5" y="283" class="sig-label">Enter</text>
+        <!-- Low until cycle 9-10 boundary, pulse high for cycle 10, low again -->
+        <!-- Pulse 1: high at cycle 9.5 to cycle 10.5 (x=379 to x=413) -->
+        <polyline class="sig-ent" points="
+          90,290 379,290 379,270 413,270 413,290 787,290 787,270 821,270 821,290 940,290
+        "/>
+
+        <!-- ==================== OUTPUT[7:0] BUS (y=330-370) ==================== -->
+        <text x="5" y="348" class="sig-label">Output</text>
+        <text x="5" y="360" class="sig-label">[7:0]</text>
+        <!-- Initial: 0 -->
+        <rect x="90" y="335" width="238" height="25" class="out-fill"/>
+        <polygon class="sig-out" points="90,347 98,335 320,335 328,347 320,360 98,360 90,347"/>
+        <text x="209" y="351" class="out-text">00000000 (0)</text>
+        <!-- After first IN: shows 12 -->
+        <rect x="328" y="335" width="306" height="25" class="out-fill"/>
+        <polygon class="sig-out" points="328,347 336,335 626,335 634,347 626,360 336,360 328,347"/>
+        <text x="481" y="351" class="out-text">00001100 (12)</text>
+        <!-- After second IN: shows 8 -->
+        <rect x="634" y="335" width="170" height="25" class="out-fill"/>
+        <polygon class="sig-out" points="634,347 642,335 796,335 804,347 796,360 642,360 634,347"/>
+        <text x="719" y="351" class="out-text">00001000 (8)</text>
+        <!-- Computation: values change... eventually GCD=4 -->
+        <rect x="804" y="335" width="136" height="25" class="out-fill"/>
+        <polygon class="sig-out" points="804,347 812,335 932,335 940,347 932,360 812,360 804,347"/>
+        <text x="872" y="351" class="out-text">→ ... → 4 (GCD)</text>
+
+        <!-- ==================== ANNOTATIONS ==================== -->
+        <!-- Arrow: "Dato 1 = 12" -->
+        <line x1="310" y1="195" x2="310" y2="205" class="annot-line"/>
+        <text x="310" y="192" class="annot-accent" text-anchor="middle">Dato 1 = 12</text>
+
+        <!-- Arrow: "Enter ↓" pulse 1 -->
+        <line x1="396" y1="258" x2="396" y2="270" class="annot-line"/>
+        <text x="396" y="255" class="annot-accent" text-anchor="middle">Enter ↓</text>
+
+        <!-- Arrow: "Dato 2 = 8" -->
+        <line x1="660" y1="195" x2="660" y2="205" class="annot-line"/>
+        <text x="660" y="192" class="annot-accent" text-anchor="middle">Dato 2 = 8</text>
+
+        <!-- Arrow: "Enter ↓" pulse 2 -->
+        <line x1="804" y1="258" x2="804" y2="270" class="annot-line"/>
+        <text x="804" y="255" class="annot-accent" text-anchor="middle">Enter ↓</text>
+
+        <!-- Annotation: fetch IN@0 -->
+        <text x="243" y="143" class="annot" text-anchor="middle" style="font-size:8px;fill:var(--muted,#888)">IN@0</text>
+
+        <!-- Annotation: STORE 28 -->
+        <text x="481" y="143" class="annot" text-anchor="middle" style="font-size:8px;fill:var(--muted,#888)">STORE 28</text>
+
+        <!-- Annotation: fetch IN@2 -->
+        <text x="583" y="143" class="annot" text-anchor="middle" style="font-size:8px;fill:var(--muted,#888)">IN@2</text>
+
+        <!-- Brace annotation: 3 ciclos fetch -->
+        <text x="209" y="88" class="annot" text-anchor="middle" style="font-size:8px">3 ciclos</text>
+        <text x="209" y="80" class="annot" text-anchor="middle" style="font-size:8px">Reset</text>
+        <line x1="94" y1="90" x2="188" y2="90" style="stroke:var(--muted,#999);stroke-width:0.8"/>
+
+        <!-- Period label -->
+        <text x="480" y="418" class="cycle-num" style="font-size:9px">Ciclo de reloj = 20 ns (50 MHz)     ·     Números de ciclo desde inicio</text>
+      </svg>
+    </div>
+
+    <div style="background:var(--surface);border-radius:12px;padding:1.2rem 1.5rem;margin:1.5rem 0;border:1px solid var(--border);font-size:0.92rem;line-height:1.7">
+      <strong style="color:var(--accent)">Lectura del diagrama:</strong>
+      <ul style="margin:0.5rem 0 0;padding-left:1.2rem">
+        <li><strong>Ciclos 1–3:</strong> Reset activo — la FSM permanece en <code>s_start</code>.</li>
+        <li><strong>Ciclos 4–6:</strong> La CPU ejecuta el ciclo <em>fetch → decode</em> de la primera instrucción <code>IN</code> (dirección 0).</li>
+        <li><strong>Ciclos 7–9:</strong> Estado <code>s_input</code> — el procesador espera que el usuario coloque el dato y pulse <strong>Enter</strong>. El usuario establece <code>Input = 12</code> en los DIP switches.</li>
+        <li><strong>Ciclo 10:</strong> Pulso de Enter. La CU lee el dato del bus de entrada al acumulador y avanza al siguiente ciclo.</li>
+        <li><strong>Ciclos 11–16:</strong> La CPU ejecuta <code>STORE 28</code> (guarda el multiplicando) y luego <em>fetch → decode</em> de la segunda instrucción <code>IN</code>.</li>
+        <li><strong>Ciclos 17–22:</strong> Segundo <code>s_input</code> — espera el segundo dato. El usuario establece <code>Input = 8</code> y pulsa Enter.</li>
+        <li><strong>Ciclos 23+:</strong> Comienza el cálculo del GCD por restas sucesivas. El resultado (4) aparece en <code>Output</code> al finalizar.</li>
+      </ul>
+    </div>
+
+    <!-- PROGRAMA EN ENSAMBLADOR -->
+    <h4 style="margin-top:2rem">Programa en Ensamblador EC-2</h4>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">Ensamblador EC-2 — GCD</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+      </div>
+      <pre class="code-body"><span class="cm">-- Programa GCD: Máximo Común Divisor por restas sucesivas</span>
+<span class="cm">-- Variables: M[28]=a, M[29]=b</span>
+<span class="cm">-- Ejemplo: GCD(12, 8) = 4</span>
+
+<span class="num"> 0:</span>  <span class="kw">IN</span>              <span class="cm">-- A ← entrada (número 1)</span>
+<span class="num"> 1:</span>  <span class="kw">STORE</span> <span class="num">28</span>        <span class="cm">-- M[28] ← a</span>
+<span class="num"> 2:</span>  <span class="kw">IN</span>              <span class="cm">-- A ← entrada (número 2)</span>
+<span class="num"> 3:</span>  <span class="kw">STORE</span> <span class="num">29</span>        <span class="cm">-- M[29] ← b</span>
+<span class="cm">-- [LOOP]:</span>
+<span class="num"> 4:</span>  <span class="kw">LOAD</span>  <span class="num">28</span>        <span class="cm">-- A ← a</span>
+<span class="num"> 5:</span>  <span class="kw">SUB</span>   <span class="num">29</span>        <span class="cm">-- A ← a − b</span>
+<span class="num"> 6:</span>  <span class="kw">JZ</span>    <span class="num">14</span>        <span class="cm">-- Si a == b → DONE</span>
+<span class="num"> 7:</span>  <span class="kw">JPOS</span>  <span class="num">12</span>        <span class="cm">-- Si a &gt; b → A_GT_B</span>
+<span class="cm">-- [B_GT_A]:</span>
+<span class="num"> 8:</span>  <span class="kw">LOAD</span>  <span class="num">29</span>        <span class="cm">-- A ← b</span>
+<span class="num"> 9:</span>  <span class="kw">SUB</span>   <span class="num">28</span>        <span class="cm">-- A ← b − a</span>
+<span class="num">10:</span>  <span class="kw">STORE</span> <span class="num">29</span>        <span class="cm">-- M[29] ← nuevo b</span>
+<span class="num">11:</span>  <span class="kw">JPOS</span>  <span class="num"> 4</span>        <span class="cm">-- → LOOP</span>
+<span class="cm">-- [A_GT_B]:</span>
+<span class="num">12:</span>  <span class="kw">STORE</span> <span class="num">28</span>        <span class="cm">-- M[28] ← a−b (nuevo a)</span>
+<span class="num">13:</span>  <span class="kw">JPOS</span>  <span class="num"> 4</span>        <span class="cm">-- → LOOP</span>
+<span class="cm">-- [DONE]:</span>
+<span class="num">14:</span>  <span class="kw">LOAD</span>  <span class="num">28</span>        <span class="cm">-- A ← GCD (resultado)</span>
+<span class="num">15:</span>  <span class="kw">HALT</span>            <span class="cm">-- Fin — resultado visible en Output</span></pre>
+    </div>
+
+    <!-- ARCHIVO .MEM -->
+    <h4 style="margin-top:2rem">Archivo de Memoria (gcd.mem)</h4>
+    <p>Contenido binario para cargar en la RAM vía <code>ram_mif.vhd</code>. Un valor de 8 bits por línea, 32 líneas (direcciones 0–31).</p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">MIF — gcd.mem</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+      </div>
+      <pre class="code-body"><span class="cm">-- Dir | Instrucción</span>
+<span class="num">10000000</span>   <span class="cm">-- 0:  IN</span>
+<span class="num">00111100</span>   <span class="cm">-- 1:  STORE 28</span>
+<span class="num">10000000</span>   <span class="cm">-- 2:  IN</span>
+<span class="num">00111101</span>   <span class="cm">-- 3:  STORE 29</span>
+<span class="num">00011100</span>   <span class="cm">-- 4:  LOAD 28</span>
+<span class="num">01111101</span>   <span class="cm">-- 5:  SUB 29</span>
+<span class="num">10101110</span>   <span class="cm">-- 6:  JZ 14</span>
+<span class="num">11001100</span>   <span class="cm">-- 7:  JPOS 12</span>
+<span class="num">00011101</span>   <span class="cm">-- 8:  LOAD 29</span>
+<span class="num">01111100</span>   <span class="cm">-- 9:  SUB 28</span>
+<span class="num">00111101</span>   <span class="cm">-- 10: STORE 29</span>
+<span class="num">11000100</span>   <span class="cm">-- 11: JPOS 4</span>
+<span class="num">00111100</span>   <span class="cm">-- 12: STORE 28</span>
+<span class="num">11000100</span>   <span class="cm">-- 13: JPOS 4</span>
+<span class="num">00011100</span>   <span class="cm">-- 14: LOAD 28</span>
+<span class="num">11100000</span>   <span class="cm">-- 15: HALT</span>
+<span class="num">00000000</span>   <span class="cm">-- 16-31: No usado / variables</span></pre>
+    </div>
+
+    <div style="background:var(--surface);border-radius:12px;padding:1.2rem 1.5rem;margin:1.5rem 0;border-left:4px solid var(--success);font-size:0.92rem">
+      <strong style="color:var(--success)">✓ Verificado con GHDL:</strong> GCD(12, 8) = 4 — Simulación exitosa. Los archivos completos (<code>gcd.mem</code>, <code>gcd.mif</code>, <code>gcd.txt</code>, <code>gcd_tb.vhd</code>) están disponibles en el <a href="https://github.com/luis-acosta/microprocessor-design/tree/main/ec2-project" style="color:var(--accent)">repositorio GitHub</a>.
+    </div>
+
   </section>
 
   <!-- RESUMEN DEL CAPÍTULO -->
@@ -2949,6 +3302,8 @@ const fileMap = {
   'mux4.vhd (dataflow)': 'mux4.vhd',
   'addsub.vhd (dataflow)': 'addsub.vhd',
   'ec-2 top-level structural': 'mp.vhd',
+  'ensamblador ec-2 — gcd': 'gcd.txt',
+  'mif — gcd.mem': 'gcd.mem',
 };
 
 function getFilename(block) {
@@ -3085,3 +3440,6 @@ document.querySelectorAll('.nav-links a').forEach(a => {
   });
 });
 </script>
+
+</body>
+</html>
