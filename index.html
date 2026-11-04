@@ -1,8 +1,3 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Microprocesadores EC-1 y EC-2</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 
@@ -134,6 +129,8 @@ a:hover { text-decoration: underline; }
 code, .code-font {
   font-family: 'Fira Code', 'Cascadia Code', monospace;
   font-variant-ligatures: none;
+  -webkit-font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
 }
 code {
   background: var(--tag-bg);
@@ -407,10 +404,32 @@ td code {
   color: #34d399;
   border-color: rgba(52,211,153,0.3);
 }
+.download-btn {
+  background: var(--copy-bg);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--fg-code);
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 0.72rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-right: 0.3rem;
+}
+.download-btn:hover { background: var(--copy-hover); }
+.download-btn.downloaded {
+  color: #34d399;
+  border-color: rgba(52,211,153,0.3);
+}
 .code-body {
   padding: 1rem;
   overflow-x: auto;
   font-family: 'Fira Code', monospace;
+  font-variant-ligatures: none;
+  -webkit-font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
   font-size: 0.82rem;
   line-height: 1.65;
   color: var(--fg-code);
@@ -770,7 +789,7 @@ td code {
 }
 
 @media print {
-  .nav, .scroll-top, .copy-btn { display: none !important; }
+  .nav, .scroll-top, .copy-btn, .download-btn { display: none !important; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1762,7 +1781,7 @@ Halt    = Q₃Q₂Q₁Q₀</div>
 
     <div class="code-block">
       <div class="code-header">
-        <span class="code-lang">VHDL — EC-2 Datapath (Structural)</span>
+        <span class="code-lang">VHDL — EC-2 Datapath (Structural) — Versión Altera/LPM</span>
         <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
       </div>
       <pre class="code-body"><span class="cm">-- ==========================================================</span>
@@ -1944,7 +1963,551 @@ Halt    = Q₃Q₂Q₁Q₀</div>
     </div>
 
     <div class="info-box">
-      <strong>📌 Nota sobre la RAM (lpm_ram_dq):</strong> El componente <code>lpm_ram_dq</code> es un megabloque de Altera (ahora Intel) que implementa RAM parametrizada. El archivo <code>PROGRAM.MIF</code> (Memory Initialization File) carga el programa en la RAM al configurar la FPGA. La salida <code>"UNREGISTERED"</code> significa que los datos leídos aparecen combinacionalmente (sin esperar un ciclo de reloj), lo cual es necesario para que las instrucciones LOAD y ADD/SUB lean el dato en el mismo ciclo que activan la dirección.
+      <strong>📌 Nota sobre la RAM (lpm_ram_dq):</strong> El componente <code>lpm_ram_dq</code> es un megabloque de Altera (ahora Intel) que implementa RAM parametrizada. El archivo <code>PROGRAM.MIF</code> (Memory Initialization File) carga el programa en la RAM al configurar la FPGA. La salida <code>"UNREGISTERED"</code> significa que los datos leídos aparecen combinacionalmente (sin esperar un ciclo de reloj), lo cual es necesario para que las instrucciones LOAD y ADD/SUB lean el dato en el mismo ciclo que activan la dirección. <strong>Véase la versión portable debajo</strong> para una implementación sin dependencias propietarias.
+    </div>
+
+    <!-- EC-2 Structural Datapath — Portable (sin LPM) -->
+    <h3>EC-2 — Ruta de Datos Estructural (Portable — sin LPM)</h3>
+    <p>Esta versión <strong>elimina toda dependencia de librerías propietarias de Altera/Intel</strong> (LPM). El componente <code>lpm_ram_dq</code> se reemplaza por un componente <code>ram</code> genérico implementado con VHDL estándar IEEE, lo que permite sintetizar en <strong>cualquier FPGA</strong> (Xilinx, Lattice, Microsemi, etc.) o simular en cualquier herramienta (ModelSim, GHDL, Vivado, etc.).</p>
+    <p>Las diferencias clave respecto a la versión Altera/LPM son:</p>
+    <ul style="margin:0.75rem 0 1rem 1.5rem; line-height:1.8">
+      <li><strong>Sin <code>LIBRARY lpm</code>:</strong> Solo usa <code>IEEE.std_logic_1164</code> y <code>IEEE.numeric_std</code></li>
+      <li><strong>Componente <code>ram</code> genérico:</strong> Implementado con un <code>TYPE</code> array y un <code>PROCESS</code> síncrono</li>
+      <li><strong>Inicialización por constante:</strong> El programa se define como un arreglo constante <code>INIT</code> dentro de la arquitectura, en lugar de un archivo <code>.mif</code> externo</li>
+      <li><strong>Lectura combinacional:</strong> <code>q &lt;= memory(addr)</code> — igual que <code>"UNREGISTERED"</code> en LPM</li>
+      <li><strong>100% portable:</strong> Sintetizable e interpretable en cualquier herramienta VHDL estándar</li>
+    </ul>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">VHDL — Componente RAM Genérico (ram.vhd)</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+      </div>
+      <pre class="code-body"><span class="cm">-- ==========================================================</span>
+<span class="cm">-- RAM Genérica 32×8 — Reemplazo portable de lpm_ram_dq</span>
+<span class="cm">-- Sintetizable en cualquier FPGA (Xilinx, Lattice, Intel, etc.)</span>
+<span class="cm">-- Lectura combinacional, escritura síncrona.</span>
+<span class="cm">-- El programa se inicializa mediante una constante INIT.</span>
+<span class="cm">-- ==========================================================</span>
+<span class="kw">LIBRARY</span> <span class="ty">IEEE</span>;
+<span class="kw">USE</span> <span class="ty">IEEE.std_logic_1164</span>.<span class="kw">ALL</span>;
+<span class="kw">USE</span> <span class="ty">IEEE.numeric_std</span>.<span class="kw">ALL</span>;
+
+<span class="kw">ENTITY</span> <span class="ty">ram</span> <span class="kw">IS</span>
+  <span class="kw">GENERIC</span>(
+    <span class="sig">ADDR_WIDTH</span> : <span class="ty">INTEGER</span> := <span class="num">5</span>;   <span class="cm">-- 5 bits → 32 posiciones</span>
+    <span class="sig">DATA_WIDTH</span> : <span class="ty">INTEGER</span> := <span class="num">8</span>    <span class="cm">-- 8 bits de ancho de palabra</span>
+  );
+  <span class="kw">PORT</span>(
+    <span class="sig">clock</span>   : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;                                     <span class="cm">-- Reloj (escritura síncrona)</span>
+    <span class="sig">we</span>      : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;                                     <span class="cm">-- Write Enable</span>
+    <span class="sig">address</span> : <span class="kw">IN</span>  <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">ADDR_WIDTH</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);     <span class="cm">-- Dirección</span>
+    <span class="sig">data</span>    : <span class="kw">IN</span>  <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">DATA_WIDTH</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);     <span class="cm">-- Datos de escritura</span>
+    <span class="sig">q</span>       : <span class="kw">OUT</span> <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">DATA_WIDTH</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>)      <span class="cm">-- Datos leídos</span>
+  );
+<span class="kw">END</span> <span class="ty">ram</span>;
+
+<span class="kw">ARCHITECTURE</span> <span class="ty">Behavioral</span> <span class="kw">OF</span> <span class="ty">ram</span> <span class="kw">IS</span>
+
+  <span class="cm">-- Tipo para el arreglo de memoria</span>
+  <span class="kw">TYPE</span> <span class="ty">memory_array</span> <span class="kw">IS</span> <span class="kw">ARRAY</span>(<span class="num">0</span> <span class="kw">TO</span> <span class="num">2</span>**<span class="sig">ADDR_WIDTH</span>-<span class="num">1</span>) <span class="kw">OF</span>
+    <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">DATA_WIDTH</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+
+  <span class="cm">-- =====================================================</span>
+  <span class="cm">-- PROGRAMA: Máximo Común Divisor (GCD)</span>
+  <span class="cm">-- Modifica este arreglo para cargar tu propio programa.</span>
+  <span class="cm">-- Direcciones 0-N: instrucciones del programa</span>
+  <span class="cm">-- Direcciones restantes: datos (inicializados a "00000000")</span>
+  <span class="cm">-- =====================================================</span>
+  <span class="kw">CONSTANT</span> <span class="sig">INIT</span> : <span class="ty">memory_array</span> := (
+    <span class="cm">-- Dir  Instrucción      Descripción</span>
+    <span class="num">0</span>  <span class="op">=></span> <span class="str">"10000000"</span>,   <span class="cm">-- IN   A              ; A ← entrada del usuario (primer número)</span>
+    <span class="num">1</span>  <span class="op">=></span> <span class="str">"00111110"</span>,   <span class="cm">-- STORE M[30]         ; M[30] ← A (guardar X)</span>
+    <span class="num">2</span>  <span class="op">=></span> <span class="str">"10000000"</span>,   <span class="cm">-- IN   A              ; A ← entrada del usuario (segundo número)</span>
+    <span class="num">3</span>  <span class="op">=></span> <span class="str">"00111111"</span>,   <span class="cm">-- STORE M[31]         ; M[31] ← A (guardar Y)</span>
+    <span class="num">4</span>  <span class="op">=></span> <span class="str">"11001011"</span>,   <span class="cm">-- JZERO 11            ; si A=0, saltar a 11 (fin)</span>
+    <span class="num">5</span>  <span class="op">=></span> <span class="str">"01011111"</span>,   <span class="cm">-- SUB  M[31]          ; A ← A - Y</span>
+    <span class="num">6</span>  <span class="op">=></span> <span class="str">"11101011"</span>,   <span class="cm">-- JPOS 11             ; si A&gt;0, saltar a 11 (X&gt;Y resuelto)</span>
+    <span class="num">7</span>  <span class="op">=></span> <span class="str">"00011111"</span>,   <span class="cm">-- LOAD M[31]          ; A ← Y</span>
+    <span class="num">8</span>  <span class="op">=></span> <span class="str">"01011110"</span>,   <span class="cm">-- SUB  M[30]          ; A ← Y - X</span>
+    <span class="num">9</span>  <span class="op">=></span> <span class="str">"00111111"</span>,   <span class="cm">-- STORE M[31]         ; M[31] ← nuevo Y</span>
+    <span class="num">10</span> <span class="op">=></span> <span class="str">"00011110"</span>,   <span class="cm">-- LOAD M[30]          ; A ← X</span>
+    <span class="num">11</span> <span class="op">=></span> <span class="str">"11000100"</span>,   <span class="cm">-- JZERO 4             ; volver al loop</span>
+    <span class="num">12</span> <span class="op">=></span> <span class="str">"00011110"</span>,   <span class="cm">-- LOAD M[30]          ; A ← resultado (GCD)</span>
+    <span class="num">13</span> <span class="op">=></span> <span class="str">"11100000"</span>,   <span class="cm">-- JPOS 0              ; saltar a 0 (reiniciar) — o HALT</span>
+    <span class="kw">OTHERS</span> <span class="op">=></span> <span class="str">"00000000"</span>    <span class="cm">-- Resto de la memoria inicializada a 0 (datos)</span>
+  );
+
+  <span class="cm">-- Señal interna de la memoria (inicializada con INIT)</span>
+  <span class="kw">SIGNAL</span> <span class="sig">memory</span> : <span class="ty">memory_array</span> := <span class="sig">INIT</span>;
+
+<span class="kw">BEGIN</span>
+  <span class="cm">-- Proceso de escritura síncrona</span>
+  <span class="cm">-- Solo escribe en el flanco ascendente del reloj cuando we='1'</span>
+  <span class="kw">PROCESS</span>(<span class="sig">clock</span>)
+  <span class="kw">BEGIN</span>
+    <span class="kw">IF</span> <span class="sig">clock</span>'<span class="kw">EVENT</span> <span class="kw">AND</span> <span class="sig">clock</span> = <span class="str">'1'</span> <span class="kw">THEN</span>
+      <span class="kw">IF</span> <span class="sig">we</span> = <span class="str">'1'</span> <span class="kw">THEN</span>
+        <span class="sig">memory</span>(<span class="ty">to_integer</span>(<span class="ty">unsigned</span>(<span class="sig">address</span>))) <span class="op">&lt;=</span> <span class="sig">data</span>;
+      <span class="kw">END</span> <span class="kw">IF</span>;
+    <span class="kw">END</span> <span class="kw">IF</span>;
+  <span class="kw">END</span> <span class="kw">PROCESS</span>;
+
+  <span class="cm">-- Lectura combinacional (asíncrona)</span>
+  <span class="cm">-- Equivalente a lpm_outdata => "UNREGISTERED"</span>
+  <span class="sig">q</span> <span class="op">&lt;=</span> <span class="sig">memory</span>(<span class="ty">to_integer</span>(<span class="ty">unsigned</span>(<span class="sig">address</span>)));
+
+<span class="kw">END</span> <span class="ty">Behavioral</span>;</pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">VHDL — EC-2 Datapath (Structural) — Versión Portable</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+      </div>
+      <pre class="code-body"><span class="cm">-- ==========================================================</span>
+<span class="cm">-- EC-2 Datapath — Ruta de Datos Estructural (PORTABLE)</span>
+<span class="cm">-- Versión sin dependencias propietarias (sin LPM de Altera)</span>
+<span class="cm">-- Usa SOLO librerías estándar IEEE.</span>
+<span class="cm">-- Compatible con: Xilinx Vivado/ISE, Lattice Diamond,</span>
+<span class="cm">--   Intel Quartus, Microsemi Libero, GHDL, ModelSim, etc.</span>
+<span class="cm">-- Figura 12.16 del libro de texto</span>
+<span class="cm">-- ==========================================================</span>
+<span class="kw">LIBRARY</span> <span class="ty">IEEE</span>;
+<span class="kw">USE</span> <span class="ty">IEEE.std_logic_1164</span>.<span class="kw">ALL</span>;
+<span class="cm">-- NO se necesita LIBRARY lpm ni USE lpm.lpm_components.ALL</span>
+
+<span class="kw">ENTITY</span> <span class="ty">dp</span> <span class="kw">IS</span> <span class="kw">PORT</span>(
+  <span class="sig">Clock</span>, <span class="sig">Clear</span>           : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;             <span class="cm">-- Reloj del sistema y reset asíncrono</span>
+  <span class="cm">-- Entrada de datos del usuario (8 DIP switches)</span>
+  <span class="sig">Input</span>                  : <span class="kw">IN</span>  <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+  <span class="cm">-- Señales de control provenientes de la Unidad de Control (CU)</span>
+  <span class="sig">IRload</span>, <span class="sig">JMPmux</span>, <span class="sig">PCload</span> : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;             <span class="cm">-- Carga IR, sel. MUX salto, carga PC</span>
+  <span class="sig">Meminst</span>, <span class="sig">MemWr</span>        : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;             <span class="cm">-- Sel. dir. memoria, habilitación escritura</span>
+  <span class="sig">Asel</span>                   : <span class="kw">IN</span>  <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);  <span class="cm">-- Selección MUX 4:1 del acumulador</span>
+  <span class="sig">Aload</span>, <span class="sig">Sub</span>             : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;             <span class="cm">-- Carga acumulador, selección resta</span>
+  <span class="cm">-- Señales de estado hacia la Unidad de Control (CU)</span>
+  <span class="sig">IR</span>                     : <span class="kw">OUT</span> <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">5</span>);  <span class="cm">-- Opcode (3 bits superiores de IR)</span>
+  <span class="sig">Aeq0</span>, <span class="sig">Apos</span>             : <span class="kw">OUT</span> <span class="ty">STD_LOGIC</span>;             <span class="cm">-- Banderas: A=0 y A&gt;0</span>
+  <span class="cm">-- Salida de datos (hacia display 7-segmentos)</span>
+  <span class="sig">Output</span>                 : <span class="kw">OUT</span> <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">0</span>)
+);
+<span class="kw">END</span> <span class="ty">dp</span>;
+
+<span class="kw">ARCHITECTURE</span> <span class="ty">Structural</span> <span class="kw">OF</span> <span class="ty">dp</span> <span class="kw">IS</span>
+
+  <span class="cm">-- ========================================</span>
+  <span class="cm">-- Declaración de componentes reutilizables</span>
+  <span class="cm">-- ========================================</span>
+
+  <span class="cm">-- Registro genérico de N bits (IR, PC, Acumulador)</span>
+  <span class="kw">COMPONENT</span> <span class="ty">reg</span>
+  <span class="kw">GENERIC</span>(<span class="sig">size</span> : <span class="ty">INTEGER</span> := <span class="num">4</span>);
+  <span class="kw">PORT</span>(
+    <span class="sig">Clock</span>, <span class="sig">Clear</span>, <span class="sig">Load</span> : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;
+    <span class="sig">D</span> : <span class="kw">IN</span>  <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">size</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+    <span class="sig">Q</span> : <span class="kw">OUT</span> <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">size</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>)
+  );
+  <span class="kw">END</span> <span class="kw">COMPONENT</span>;
+
+  <span class="cm">-- Incrementador genérico de N bits (PC + 1)</span>
+  <span class="kw">COMPONENT</span> <span class="ty">increment</span>
+  <span class="kw">GENERIC</span>(<span class="sig">size</span> : <span class="ty">INTEGER</span> := <span class="num">8</span>);
+  <span class="kw">PORT</span>(
+    <span class="sig">A</span> : <span class="kw">IN</span>  <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">size</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+    <span class="sig">F</span> : <span class="kw">OUT</span> <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">size</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>)
+  );
+  <span class="kw">END</span> <span class="kw">COMPONENT</span>;
+
+  <span class="cm">-- Multiplexor 2:1 genérico (JMPmux, Meminst MUX)</span>
+  <span class="kw">COMPONENT</span> <span class="ty">mux2</span>
+  <span class="kw">GENERIC</span>(<span class="sig">size</span> : <span class="ty">INTEGER</span> := <span class="num">8</span>);
+  <span class="kw">PORT</span>(
+    <span class="sig">S</span>      : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;
+    <span class="sig">D1</span>, <span class="sig">D0</span> : <span class="kw">IN</span>  <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">size</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+    <span class="sig">Y</span>      : <span class="kw">OUT</span> <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">size</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>)
+  );
+  <span class="kw">END</span> <span class="kw">COMPONENT</span>;
+
+  <span class="cm">-- Multiplexor 4:1 genérico (selección entrada del acumulador)</span>
+  <span class="kw">COMPONENT</span> <span class="ty">mux4</span>
+  <span class="kw">GENERIC</span>(<span class="sig">size</span> : <span class="ty">INTEGER</span> := <span class="num">8</span>);
+  <span class="kw">PORT</span>(
+    <span class="sig">S</span>              : <span class="kw">IN</span>  <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+    <span class="sig">D3</span>, <span class="sig">D2</span>, <span class="sig">D1</span>, <span class="sig">D0</span> : <span class="kw">IN</span>  <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">size</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+    <span class="sig">Y</span>              : <span class="kw">OUT</span> <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">size</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>)
+  );
+  <span class="kw">END</span> <span class="kw">COMPONENT</span>;
+
+  <span class="cm">-- Sumador/Restador genérico de N bits</span>
+  <span class="kw">COMPONENT</span> <span class="ty">addsub</span>
+  <span class="kw">GENERIC</span>(<span class="sig">n</span> : <span class="ty">INTEGER</span> := <span class="num">4</span>);
+  <span class="kw">PORT</span>(
+    <span class="sig">S</span>               : <span class="kw">IN</span>  <span class="ty">std_logic</span>;
+    <span class="sig">A</span>, <span class="sig">B</span>           : <span class="kw">IN</span>  <span class="ty">std_logic_vector</span>(<span class="sig">n</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+    <span class="sig">F</span>               : <span class="kw">OUT</span> <span class="ty">std_logic_vector</span>(<span class="sig">n</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+    <span class="sig">unsigned_overflow</span> : <span class="kw">OUT</span> <span class="ty">std_logic</span>;
+    <span class="sig">signed_overflow</span>   : <span class="kw">OUT</span> <span class="ty">std_logic</span>
+  );
+  <span class="kw">END</span> <span class="kw">COMPONENT</span>;
+
+  <span class="cm">-- ★ RAM genérica — reemplazo portable de lpm_ram_dq ★</span>
+  <span class="kw">COMPONENT</span> <span class="ty">ram</span>
+  <span class="kw">GENERIC</span>(
+    <span class="sig">ADDR_WIDTH</span> : <span class="ty">INTEGER</span> := <span class="num">5</span>;
+    <span class="sig">DATA_WIDTH</span> : <span class="ty">INTEGER</span> := <span class="num">8</span>
+  );
+  <span class="kw">PORT</span>(
+    <span class="sig">clock</span>   : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;
+    <span class="sig">we</span>      : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;
+    <span class="sig">address</span> : <span class="kw">IN</span>  <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">ADDR_WIDTH</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+    <span class="sig">data</span>    : <span class="kw">IN</span>  <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">DATA_WIDTH</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+    <span class="sig">q</span>       : <span class="kw">OUT</span> <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">DATA_WIDTH</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>)
+  );
+  <span class="kw">END</span> <span class="kw">COMPONENT</span>;
+
+  <span class="cm">-- ==========================================</span>
+  <span class="cm">-- Señales internas de interconexión</span>
+  <span class="cm">-- ==========================================</span>
+  <span class="kw">SIGNAL</span> <span class="sig">dp_IR</span>, <span class="sig">dp_RAMQ</span>       : <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+  <span class="kw">SIGNAL</span> <span class="sig">dp_JMPmux</span>, <span class="sig">dp_PC</span>    : <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">4</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+  <span class="kw">SIGNAL</span> <span class="sig">dp_increment</span>         : <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">4</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+  <span class="kw">SIGNAL</span> <span class="sig">dp_meminst</span>           : <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">4</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+  <span class="kw">SIGNAL</span> <span class="sig">dp_Amux</span>, <span class="sig">dp_addsub</span>  : <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+  <span class="kw">SIGNAL</span> <span class="sig">dp_A</span>                 : <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+
+<span class="kw">BEGIN</span>
+  <span class="cm">-- ==========================================</span>
+  <span class="cm">-- Instanciación estructural de componentes</span>
+  <span class="cm">-- ==========================================</span>
+
+  <span class="cm">-- U0: Registro de Instrucción (IR) — 8 bits</span>
+  <span class="sig">U0</span>: <span class="ty">reg</span> <span class="kw">GENERIC MAP</span>(<span class="num">8</span>) <span class="kw">PORT MAP</span>(
+    <span class="sig">Clock</span>, <span class="sig">Clear</span>, <span class="sig">IRLoad</span>, <span class="sig">dp_RAMQ</span>, <span class="sig">dp_IR</span>);
+  <span class="sig">IR</span> <span class="op">&lt;=</span> <span class="sig">dp_IR</span>(<span class="num">7</span> <span class="kw">DOWNTO</span> <span class="num">5</span>);  <span class="cm">-- Enviar opcode a la CU</span>
+
+  <span class="cm">-- U1: JMPmux — MUX 2:1 de 5 bits</span>
+  <span class="sig">U1</span>: <span class="ty">mux2</span> <span class="kw">GENERIC MAP</span>(<span class="num">5</span>) <span class="kw">PORT MAP</span>(
+    <span class="sig">JMPmux</span>, <span class="sig">dp_IR</span>(<span class="num">4</span> <span class="kw">DOWNTO</span> <span class="num">0</span>), <span class="sig">dp_increment</span>, <span class="sig">dp_JMPmux</span>);
+
+  <span class="cm">-- U2: Contador de Programa (PC) — 5 bits</span>
+  <span class="sig">U2</span>: <span class="ty">reg</span> <span class="kw">GENERIC MAP</span>(<span class="num">5</span>) <span class="kw">PORT MAP</span>(
+    <span class="sig">Clock</span>, <span class="sig">Clear</span>, <span class="sig">PCLoad</span>, <span class="sig">dp_JMPmux</span>, <span class="sig">dp_PC</span>);
+
+  <span class="cm">-- U3: Meminst MUX — MUX 2:1 de 5 bits</span>
+  <span class="sig">U3</span>: <span class="ty">mux2</span> <span class="kw">GENERIC MAP</span>(<span class="num">5</span>) <span class="kw">PORT MAP</span>(
+    <span class="sig">Meminst</span>, <span class="sig">dp_IR</span>(<span class="num">4</span> <span class="kw">DOWNTO</span> <span class="num">0</span>), <span class="sig">dp_PC</span>, <span class="sig">dp_meminst</span>);
+
+  <span class="cm">-- U4: Incrementador — PC + 1</span>
+  <span class="sig">U4</span>: <span class="ty">increment</span> <span class="kw">GENERIC MAP</span>(<span class="num">5</span>) <span class="kw">PORT MAP</span>(
+    <span class="sig">dp_PC</span>, <span class="sig">dp_increment</span>);
+
+  <span class="cm">-- ★ U5: RAM 32×8 — Componente genérico (reemplaza lpm_ram_dq) ★</span>
+  <span class="cm">-- El programa se define dentro de ram.vhd como constante INIT</span>
+  <span class="cm">-- No requiere archivo .mif externo</span>
+  <span class="sig">U5</span>: <span class="ty">ram</span>
+  <span class="kw">GENERIC MAP</span>(
+    <span class="sig">ADDR_WIDTH</span> <span class="op">=></span> <span class="num">5</span>,   <span class="cm">-- 5 bits de dirección → 32 posiciones</span>
+    <span class="sig">DATA_WIDTH</span> <span class="op">=></span> <span class="num">8</span>    <span class="cm">-- 8 bits de ancho de palabra</span>
+  )
+  <span class="kw">PORT MAP</span>(
+    <span class="sig">clock</span>   <span class="op">=></span> <span class="sig">Clock</span>,       <span class="cm">-- Reloj para escritura síncrona</span>
+    <span class="sig">we</span>      <span class="op">=></span> <span class="sig">MemWr</span>,       <span class="cm">-- Write Enable</span>
+    <span class="sig">address</span> <span class="op">=></span> <span class="sig">dp_meminst</span>,  <span class="cm">-- Dirección (del MUX Meminst)</span>
+    <span class="sig">data</span>    <span class="op">=></span> <span class="sig">dp_A</span>,        <span class="cm">-- Datos de escritura (del acumulador)</span>
+    <span class="sig">q</span>       <span class="op">=></span> <span class="sig">dp_RAMQ</span>      <span class="cm">-- Datos leídos de memoria</span>
+  );
+
+  <span class="cm">-- U6: MUX 4:1 — Selección de entrada al acumulador</span>
+  <span class="sig">U6</span>: <span class="ty">mux4</span> <span class="kw">GENERIC MAP</span>(<span class="num">8</span>) <span class="kw">PORT MAP</span>(
+    <span class="sig">Asel</span>, <span class="sig">dp_RAMQ</span>, <span class="sig">dp_RAMQ</span>, <span class="sig">Input</span>, <span class="sig">dp_addsub</span>, <span class="sig">dp_Amux</span>);
+
+  <span class="cm">-- U7: Acumulador A — Registro de 8 bits</span>
+  <span class="sig">U7</span>: <span class="ty">reg</span> <span class="kw">GENERIC MAP</span>(<span class="num">8</span>) <span class="kw">PORT MAP</span>(
+    <span class="sig">Clock</span>, <span class="sig">Clear</span>, <span class="sig">ALoad</span>, <span class="sig">dp_Amux</span>, <span class="sig">dp_A</span>);
+
+  <span class="cm">-- U8: Sumador/Restador de 8 bits</span>
+  <span class="sig">U8</span>: <span class="ty">addsub</span> <span class="kw">GENERIC MAP</span>(<span class="num">8</span>) <span class="kw">PORT MAP</span>(
+    <span class="sig">Sub</span>, <span class="sig">dp_A</span>, <span class="sig">dp_RAMQ</span>, <span class="sig">dp_addsub</span>, <span class="kw">open</span>, <span class="kw">open</span>);
+
+  <span class="cm">-- ==========================================</span>
+  <span class="cm">-- Señales de estado para la Unidad de Control</span>
+  <span class="cm">-- ==========================================</span>
+  <span class="sig">Aeq0</span>   <span class="op">&lt;=</span> <span class="str">'1'</span> <span class="kw">WHEN</span> <span class="sig">dp_A</span> = <span class="str">"00000000"</span> <span class="kw">ELSE</span> <span class="str">'0'</span>;
+  <span class="sig">Apos</span>   <span class="op">&lt;=</span> <span class="kw">NOT</span> <span class="sig">dp_A</span>(<span class="num">7</span>);
+  <span class="sig">Output</span> <span class="op">&lt;=</span> <span class="sig">dp_A</span>;
+<span class="kw">END</span> <span class="ty">Structural</span>;</pre>
+    </div>
+
+    <div class="info-box" style="border-left-color: var(--success)">
+      <strong>✅ Versión Portable — Ventajas:</strong><br>
+      • <strong>Sin dependencias propietarias:</strong> No requiere <code>LIBRARY lpm</code> ni archivos <code>.mif</code><br>
+      • <strong>Multi-plataforma:</strong> Funciona en Xilinx (Vivado/ISE), Lattice (Diamond), Intel (Quartus), Microsemi (Libero), y simuladores como GHDL y ModelSim<br>
+      • <strong>Programa embebido:</strong> La constante <code>INIT</code> dentro de <code>ram.vhd</code> contiene el programa; para cambiar el programa, solo se modifica este arreglo<br>
+      • <strong>Misma funcionalidad:</strong> Lectura combinacional + escritura síncrona, idéntico al comportamiento de <code>lpm_ram_dq</code> con salida <code>"UNREGISTERED"</code><br>
+      • <strong>Estructura de archivos:</strong> Requiere un archivo adicional <code>ram.vhd</code> en el proyecto junto con los demás componentes (<code>reg.vhd</code>, <code>mux2.vhd</code>, etc.)
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- COMPONENTES INDIVIDUALES DEL DATAPATH EC-2 (PORTABLE)        -->
+    <!-- ============================================================ -->
+    <h3>Componentes Individuales del Datapath EC-2 (Portable)</h3>
+    <p>A continuación se presenta la implementación de <strong>cada componente</strong> utilizado en la versión portable del datapath. Los componentes <strong>combinatorios</strong> (multiplexores, incrementador, sumador/restador) se describen en estilo <em>flujo de datos</em> (<code>dataflow</code>) mediante asignaciones concurrentes. Los componentes <strong>secuenciales</strong> (registro, RAM) se describen en estilo <em>comportamiento</em> (<code>behavioral</code>) usando procesos con sensibilidad al reloj.</p>
+    <p>Todos los componentes son <strong>genéricos</strong> (parametrizados por tamaño) y utilizan únicamente librerías estándar IEEE. El sistema completo opera con un <strong>bus de datos de 8 bits</strong> y un <strong>bus de direcciones de 5 bits</strong>.</p>
+
+    <!-- ===================== reg.vhd ===================== -->
+    <h4 style="margin-top:2rem">1. Registro Genérico — <code>reg.vhd</code> (Behavioral / Secuencial)</h4>
+    <p>Registro de carga paralela con <code>Clear</code> asíncrono. En el EC-2 se instancia tres veces: como <strong>IR</strong> (8 bits), <strong>PC</strong> (5 bits) y <strong>Acumulador A</strong> (8 bits). La carga ocurre en el flanco ascendente del reloj solo cuando <code>Load = '1'</code>.</p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">VHDL — reg.vhd (Behavioral)</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+      </div>
+      <pre class="code-body"><span class="cm">-- ==========================================================</span>
+<span class="cm">-- Registro Genérico de N bits con carga paralela</span>
+<span class="cm">-- Estilo: Behavioral (secuencial — usa PROCESS)</span>
+<span class="cm">-- Clear: reset asíncrono activo en alto</span>
+<span class="cm">-- Load:  habilitación de carga síncrona</span>
+<span class="cm">-- Instancias en EC-2:</span>
+<span class="cm">--   U0: IR  (size=8)  — Registro de Instrucción</span>
+<span class="cm">--   U2: PC  (size=5)  — Contador de Programa</span>
+<span class="cm">--   U7: A   (size=8)  — Acumulador</span>
+<span class="cm">-- ==========================================================</span>
+<span class="kw">LIBRARY</span> <span class="ty">IEEE</span>;
+<span class="kw">USE</span> <span class="ty">IEEE.std_logic_1164</span>.<span class="kw">ALL</span>;
+
+<span class="kw">ENTITY</span> <span class="ty">reg</span> <span class="kw">IS</span>
+  <span class="kw">GENERIC</span>(<span class="sig">size</span> : <span class="ty">INTEGER</span> := <span class="num">8</span>);    <span class="cm">-- Tamaño por defecto: 8 bits</span>
+  <span class="kw">PORT</span>(
+    <span class="sig">Clock</span> : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;       <span class="cm">-- Reloj del sistema</span>
+    <span class="sig">Clear</span> : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;       <span class="cm">-- Reset asíncrono (activo alto)</span>
+    <span class="sig">Load</span>  : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;       <span class="cm">-- Habilitación de carga</span>
+    <span class="sig">D</span>     : <span class="kw">IN</span>  <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">size</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);  <span class="cm">-- Entrada de datos</span>
+    <span class="sig">Q</span>     : <span class="kw">OUT</span> <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">size</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>)   <span class="cm">-- Salida de datos</span>
+  );
+<span class="kw">END</span> <span class="ty">reg</span>;
+
+<span class="kw">ARCHITECTURE</span> <span class="ty">Behavioral</span> <span class="kw">OF</span> <span class="ty">reg</span> <span class="kw">IS</span>
+<span class="kw">BEGIN</span>
+  <span class="cm">-- Proceso secuencial: sensible al reloj y al clear</span>
+  <span class="kw">PROCESS</span>(<span class="sig">Clock</span>, <span class="sig">Clear</span>)
+  <span class="kw">BEGIN</span>
+    <span class="kw">IF</span> <span class="sig">Clear</span> = <span class="str">'1'</span> <span class="kw">THEN</span>
+      <span class="cm">-- Reset asíncrono: pone todas las salidas a '0'</span>
+      <span class="sig">Q</span> <span class="op">&lt;=</span> (<span class="kw">OTHERS</span> <span class="op">=></span> <span class="str">'0'</span>);
+    <span class="kw">ELSIF</span> <span class="sig">Clock</span>'<span class="kw">EVENT</span> <span class="kw">AND</span> <span class="sig">Clock</span> = <span class="str">'1'</span> <span class="kw">THEN</span>
+      <span class="cm">-- Flanco ascendente: carga D solo si Load='1'</span>
+      <span class="kw">IF</span> <span class="sig">Load</span> = <span class="str">'1'</span> <span class="kw">THEN</span>
+        <span class="sig">Q</span> <span class="op">&lt;=</span> <span class="sig">D</span>;
+      <span class="kw">END</span> <span class="kw">IF</span>;
+      <span class="cm">-- Si Load='0', Q mantiene su valor anterior (implícito)</span>
+    <span class="kw">END</span> <span class="kw">IF</span>;
+  <span class="kw">END</span> <span class="kw">PROCESS</span>;
+<span class="kw">END</span> <span class="ty">Behavioral</span>;</pre>
+    </div>
+
+    <!-- ===================== increment.vhd ===================== -->
+    <h4 style="margin-top:2rem">2. Incrementador Genérico — <code>increment.vhd</code> (Dataflow / Combinatorio)</h4>
+    <p>Incrementador de N bits que calcula <code>F = A + 1</code>. En el EC-2 se usa como <strong>U4</strong> (5 bits) para generar la siguiente dirección secuencial <code>PC + 1</code>. Al ser puramente combinatorio, se describe con una <strong>asignación concurrente</strong> de flujo de datos.</p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">VHDL — increment.vhd (Dataflow)</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+      </div>
+      <pre class="code-body"><span class="cm">-- ==========================================================</span>
+<span class="cm">-- Incrementador Genérico de N bits (F = A + 1)</span>
+<span class="cm">-- Estilo: Dataflow (combinatorio — asignación concurrente)</span>
+<span class="cm">-- Instancia en EC-2:</span>
+<span class="cm">--   U4: increment (size=5) — calcula PC + 1</span>
+<span class="cm">-- ==========================================================</span>
+<span class="kw">LIBRARY</span> <span class="ty">IEEE</span>;
+<span class="kw">USE</span> <span class="ty">IEEE.std_logic_1164</span>.<span class="kw">ALL</span>;
+<span class="kw">USE</span> <span class="ty">IEEE.numeric_std</span>.<span class="kw">ALL</span>;
+
+<span class="kw">ENTITY</span> <span class="ty">increment</span> <span class="kw">IS</span>
+  <span class="kw">GENERIC</span>(<span class="sig">size</span> : <span class="ty">INTEGER</span> := <span class="num">8</span>);    <span class="cm">-- Tamaño por defecto: 8 bits</span>
+  <span class="kw">PORT</span>(
+    <span class="sig">A</span> : <span class="kw">IN</span>  <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">size</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);  <span class="cm">-- Valor a incrementar</span>
+    <span class="sig">F</span> : <span class="kw">OUT</span> <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">size</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>)   <span class="cm">-- Resultado: A + 1</span>
+  );
+<span class="kw">END</span> <span class="ty">increment</span>;
+
+<span class="kw">ARCHITECTURE</span> <span class="ty">Dataflow</span> <span class="kw">OF</span> <span class="ty">increment</span> <span class="kw">IS</span>
+<span class="kw">BEGIN</span>
+  <span class="cm">-- Asignación concurrente: suma aritmética A + 1</span>
+  <span class="cm">-- unsigned() convierte STD_LOGIC_VECTOR para operar con +</span>
+  <span class="cm">-- std_logic_vector() convierte el resultado de vuelta</span>
+  <span class="sig">F</span> <span class="op">&lt;=</span> <span class="ty">std_logic_vector</span>(<span class="ty">unsigned</span>(<span class="sig">A</span>) + <span class="num">1</span>);
+<span class="kw">END</span> <span class="ty">Dataflow</span>;</pre>
+    </div>
+
+    <!-- ===================== mux2.vhd ===================== -->
+    <h4 style="margin-top:2rem">3. Multiplexor 2:1 Genérico — <code>mux2.vhd</code> (Dataflow / Combinatorio)</h4>
+    <p>Multiplexor de 2 entradas de N bits. Cuando <code>S = '0'</code> selecciona <code>D0</code>; cuando <code>S = '1'</code> selecciona <code>D1</code>. En el EC-2 se instancia dos veces: como <strong>U1 — JMPmux</strong> (5 bits, selecciona PC+1 o dirección de salto) y <strong>U3 — Meminst</strong> (5 bits, selecciona dirección de PC o del operando).</p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">VHDL — mux2.vhd (Dataflow)</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+      </div>
+      <pre class="code-body"><span class="cm">-- ==========================================================</span>
+<span class="cm">-- Multiplexor 2:1 Genérico de N bits</span>
+<span class="cm">-- Estilo: Dataflow (combinatorio — asignación condicional)</span>
+<span class="cm">-- S='0' → Y=D0,  S='1' → Y=D1</span>
+<span class="cm">-- Instancias en EC-2:</span>
+<span class="cm">--   U1: JMPmux   (size=5) — PC+1 o dirección de salto</span>
+<span class="cm">--   U3: Meminst  (size=5) — dirección PC o del operando</span>
+<span class="cm">-- ==========================================================</span>
+<span class="kw">LIBRARY</span> <span class="ty">IEEE</span>;
+<span class="kw">USE</span> <span class="ty">IEEE.std_logic_1164</span>.<span class="kw">ALL</span>;
+
+<span class="kw">ENTITY</span> <span class="ty">mux2</span> <span class="kw">IS</span>
+  <span class="kw">GENERIC</span>(<span class="sig">size</span> : <span class="ty">INTEGER</span> := <span class="num">8</span>);    <span class="cm">-- Tamaño por defecto: 8 bits</span>
+  <span class="kw">PORT</span>(
+    <span class="sig">S</span>      : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;                              <span class="cm">-- Línea de selección</span>
+    <span class="sig">D1</span>, <span class="sig">D0</span> : <span class="kw">IN</span>  <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">size</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);   <span class="cm">-- Entradas de datos</span>
+    <span class="sig">Y</span>      : <span class="kw">OUT</span> <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">size</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>)    <span class="cm">-- Salida seleccionada</span>
+  );
+<span class="kw">END</span> <span class="ty">mux2</span>;
+
+<span class="kw">ARCHITECTURE</span> <span class="ty">Dataflow</span> <span class="kw">OF</span> <span class="ty">mux2</span> <span class="kw">IS</span>
+<span class="kw">BEGIN</span>
+  <span class="cm">-- Asignación condicional concurrente (WHEN-ELSE)</span>
+  <span class="cm">-- Implementa la tabla de verdad del multiplexor 2:1:</span>
+  <span class="cm">--   S=0 → Y recibe D0 (primera entrada)</span>
+  <span class="cm">--   S=1 → Y recibe D1 (segunda entrada)</span>
+  <span class="sig">Y</span> <span class="op">&lt;=</span> <span class="sig">D1</span> <span class="kw">WHEN</span> <span class="sig">S</span> = <span class="str">'1'</span> <span class="kw">ELSE</span>
+       <span class="sig">D0</span>;
+<span class="kw">END</span> <span class="ty">Dataflow</span>;</pre>
+    </div>
+
+    <!-- ===================== mux4.vhd ===================== -->
+    <h4 style="margin-top:2rem">4. Multiplexor 4:1 Genérico — <code>mux4.vhd</code> (Dataflow / Combinatorio)</h4>
+    <p>Multiplexor de 4 entradas de N bits con selección de 2 bits. En el EC-2 se instancia como <strong>U6 — Asel MUX</strong> (8 bits) que selecciona la fuente del acumulador: <code>"00"</code> → dato de RAM (LOAD), <code>"01"</code> → resultado del sumador/restador (ADD/SUB), <code>"10"</code> → entrada del usuario (IN), <code>"11"</code> → no usado.</p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">VHDL — mux4.vhd (Dataflow)</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+      </div>
+      <pre class="code-body"><span class="cm">-- ==========================================================</span>
+<span class="cm">-- Multiplexor 4:1 Genérico de N bits</span>
+<span class="cm">-- Estilo: Dataflow (combinatorio — WITH-SELECT)</span>
+<span class="cm">-- S="00"→D0, S="01"→D1, S="10"→D2, S="11"→D3</span>
+<span class="cm">-- Instancia en EC-2:</span>
+<span class="cm">--   U6: Asel MUX (size=8)</span>
+<span class="cm">--     "00" → RAM[dir]   (instrucción LOAD)</span>
+<span class="cm">--     "01" → AddSub     (instrucción ADD/SUB)</span>
+<span class="cm">--     "10" → Input      (instrucción IN)</span>
+<span class="cm">--     "11" → no usado</span>
+<span class="cm">-- ==========================================================</span>
+<span class="kw">LIBRARY</span> <span class="ty">IEEE</span>;
+<span class="kw">USE</span> <span class="ty">IEEE.std_logic_1164</span>.<span class="kw">ALL</span>;
+
+<span class="kw">ENTITY</span> <span class="ty">mux4</span> <span class="kw">IS</span>
+  <span class="kw">GENERIC</span>(<span class="sig">size</span> : <span class="ty">INTEGER</span> := <span class="num">8</span>);    <span class="cm">-- Tamaño por defecto: 8 bits</span>
+  <span class="kw">PORT</span>(
+    <span class="sig">S</span>              : <span class="kw">IN</span>  <span class="ty">STD_LOGIC_VECTOR</span>(<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);           <span class="cm">-- Selección (2 bits)</span>
+    <span class="sig">D3</span>, <span class="sig">D2</span>, <span class="sig">D1</span>, <span class="sig">D0</span> : <span class="kw">IN</span>  <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">size</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);   <span class="cm">-- Entradas de datos</span>
+    <span class="sig">Y</span>              : <span class="kw">OUT</span> <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">size</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>)    <span class="cm">-- Salida seleccionada</span>
+  );
+<span class="kw">END</span> <span class="ty">mux4</span>;
+
+<span class="kw">ARCHITECTURE</span> <span class="ty">Dataflow</span> <span class="kw">OF</span> <span class="ty">mux4</span> <span class="kw">IS</span>
+<span class="kw">BEGIN</span>
+  <span class="cm">-- Asignación selectiva concurrente (WITH-SELECT)</span>
+  <span class="cm">-- Implementa la tabla de verdad del multiplexor 4:1</span>
+  <span class="kw">WITH</span> <span class="sig">S</span> <span class="kw">SELECT</span>
+    <span class="sig">Y</span> <span class="op">&lt;=</span> <span class="sig">D0</span> <span class="kw">WHEN</span> <span class="str">"00"</span>,   <span class="cm">-- S=00: primera entrada</span>
+         <span class="sig">D1</span> <span class="kw">WHEN</span> <span class="str">"01"</span>,   <span class="cm">-- S=01: segunda entrada</span>
+         <span class="sig">D2</span> <span class="kw">WHEN</span> <span class="str">"10"</span>,   <span class="cm">-- S=10: tercera entrada</span>
+         <span class="sig">D3</span> <span class="kw">WHEN</span> <span class="kw">OTHERS</span>; <span class="cm">-- S=11: cuarta entrada (o cualquier otro valor)</span>
+<span class="kw">END</span> <span class="ty">Dataflow</span>;</pre>
+    </div>
+
+    <!-- ===================== addsub.vhd ===================== -->
+    <h4 style="margin-top:2rem">5. Sumador/Restador Genérico — <code>addsub.vhd</code> (Dataflow / Combinatorio)</h4>
+    <p>Unidad aritmética de N bits que realiza suma (<code>S = '0'</code>) o resta (<code>S = '1'</code>). En el EC-2 se instancia como <strong>U8</strong> (8 bits) y calcula <code>A + RAM[dir]</code> o <code>A − RAM[dir]</code>. Genera señales de desbordamiento para aritmética con y sin signo.</p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">VHDL — addsub.vhd (Dataflow)</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+      </div>
+      <pre class="code-body"><span class="cm">-- ==========================================================</span>
+<span class="cm">-- Sumador/Restador Genérico de N bits</span>
+<span class="cm">-- Estilo: Dataflow (combinatorio — asignaciones concurrentes)</span>
+<span class="cm">-- S='0' → F = A + B  (suma)</span>
+<span class="cm">-- S='1' → F = A - B  (resta)</span>
+<span class="cm">-- Instancia en EC-2:</span>
+<span class="cm">--   U8: addsub (n=8) — opera A ± RAM[dir]</span>
+<span class="cm">-- ==========================================================</span>
+<span class="kw">LIBRARY</span> <span class="ty">IEEE</span>;
+<span class="kw">USE</span> <span class="ty">IEEE.std_logic_1164</span>.<span class="kw">ALL</span>;
+<span class="kw">USE</span> <span class="ty">IEEE.numeric_std</span>.<span class="kw">ALL</span>;
+
+<span class="kw">ENTITY</span> <span class="ty">addsub</span> <span class="kw">IS</span>
+  <span class="kw">GENERIC</span>(<span class="sig">n</span> : <span class="ty">INTEGER</span> := <span class="num">8</span>);        <span class="cm">-- Tamaño por defecto: 8 bits</span>
+  <span class="kw">PORT</span>(
+    <span class="sig">S</span>               : <span class="kw">IN</span>  <span class="ty">STD_LOGIC</span>;                         <span class="cm">-- 0=Suma, 1=Resta</span>
+    <span class="sig">A</span>, <span class="sig">B</span>           : <span class="kw">IN</span>  <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">n</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);   <span class="cm">-- Operandos</span>
+    <span class="sig">F</span>               : <span class="kw">OUT</span> <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">n</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);   <span class="cm">-- Resultado</span>
+    <span class="sig">unsigned_overflow</span> : <span class="kw">OUT</span> <span class="ty">STD_LOGIC</span>;                       <span class="cm">-- Desbordamiento sin signo (carry out)</span>
+    <span class="sig">signed_overflow</span>   : <span class="kw">OUT</span> <span class="ty">STD_LOGIC</span>                        <span class="cm">-- Desbordamiento con signo</span>
+  );
+<span class="kw">END</span> <span class="ty">addsub</span>;
+
+<span class="kw">ARCHITECTURE</span> <span class="ty">Dataflow</span> <span class="kw">OF</span> <span class="ty">addsub</span> <span class="kw">IS</span>
+  <span class="cm">-- Señales internas extendidas a n+1 bits para detectar carry</span>
+  <span class="kw">SIGNAL</span> <span class="sig">A_ext</span>, <span class="sig">B_ext</span>, <span class="sig">result_ext</span> : <span class="ty">UNSIGNED</span>(<span class="sig">n</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+  <span class="kw">SIGNAL</span> <span class="sig">result</span>                   : <span class="ty">STD_LOGIC_VECTOR</span>(<span class="sig">n</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>);
+<span class="kw">BEGIN</span>
+  <span class="cm">-- Extender operandos a n+1 bits (bit extra para carry)</span>
+  <span class="sig">A_ext</span> <span class="op">&lt;=</span> <span class="str">'0'</span> &amp; <span class="ty">unsigned</span>(<span class="sig">A</span>);
+  <span class="sig">B_ext</span> <span class="op">&lt;=</span> <span class="str">'0'</span> &amp; <span class="ty">unsigned</span>(<span class="sig">B</span>);
+
+  <span class="cm">-- Operación: suma o resta según S</span>
+  <span class="sig">result_ext</span> <span class="op">&lt;=</span> (<span class="sig">A_ext</span> - <span class="sig">B_ext</span>) <span class="kw">WHEN</span> <span class="sig">S</span> = <span class="str">'1'</span> <span class="kw">ELSE</span>
+                 (<span class="sig">A_ext</span> + <span class="sig">B_ext</span>);
+
+  <span class="cm">-- Resultado: los n bits inferiores</span>
+  <span class="sig">result</span> <span class="op">&lt;=</span> <span class="ty">std_logic_vector</span>(<span class="sig">result_ext</span>(<span class="sig">n</span>-<span class="num">1</span> <span class="kw">DOWNTO</span> <span class="num">0</span>));
+  <span class="sig">F</span> <span class="op">&lt;=</span> <span class="sig">result</span>;
+
+  <span class="cm">-- Desbordamiento sin signo: carry del bit n</span>
+  <span class="cm">-- En suma: carry=1 indica resultado > 2^n-1</span>
+  <span class="cm">-- En resta: borrow (carry=1 si A < B en unsigned)</span>
+  <span class="sig">unsigned_overflow</span> <span class="op">&lt;=</span> <span class="sig">result_ext</span>(<span class="sig">n</span>);
+
+  <span class="cm">-- Desbordamiento con signo (complemento a 2):</span>
+  <span class="cm">-- Ocurre cuando los signos de los operandos son iguales</span>
+  <span class="cm">-- pero el signo del resultado difiere.</span>
+  <span class="cm">-- Suma: overflow si A(msb)=B(msb) ≠ F(msb)</span>
+  <span class="cm">-- Resta: overflow si A(msb)≠B(msb) y A(msb)≠F(msb)</span>
+  <span class="sig">signed_overflow</span> <span class="op">&lt;=</span>
+    (<span class="kw">NOT</span> <span class="sig">A</span>(<span class="sig">n</span>-<span class="num">1</span>) <span class="kw">AND</span> <span class="kw">NOT</span> <span class="sig">B</span>(<span class="sig">n</span>-<span class="num">1</span>) <span class="kw">AND</span> <span class="sig">result</span>(<span class="sig">n</span>-<span class="num">1</span>)) <span class="kw">OR</span>        <span class="cm">-- +A + +B = -F</span>
+    (<span class="sig">A</span>(<span class="sig">n</span>-<span class="num">1</span>) <span class="kw">AND</span> <span class="sig">B</span>(<span class="sig">n</span>-<span class="num">1</span>) <span class="kw">AND</span> <span class="kw">NOT</span> <span class="sig">result</span>(<span class="sig">n</span>-<span class="num">1</span>)) <span class="kw">WHEN</span> <span class="sig">S</span> = <span class="str">'0'</span>  <span class="cm">-- -A + -B = +F</span>
+    <span class="kw">ELSE</span>
+    (<span class="kw">NOT</span> <span class="sig">A</span>(<span class="sig">n</span>-<span class="num">1</span>) <span class="kw">AND</span> <span class="sig">B</span>(<span class="sig">n</span>-<span class="num">1</span>) <span class="kw">AND</span> <span class="sig">result</span>(<span class="sig">n</span>-<span class="num">1</span>)) <span class="kw">OR</span>        <span class="cm">-- +A - -B = -F</span>
+    (<span class="sig">A</span>(<span class="sig">n</span>-<span class="num">1</span>) <span class="kw">AND</span> <span class="kw">NOT</span> <span class="sig">B</span>(<span class="sig">n</span>-<span class="num">1</span>) <span class="kw">AND</span> <span class="kw">NOT</span> <span class="sig">result</span>(<span class="sig">n</span>-<span class="num">1</span>));       <span class="cm">-- -A - +B = +F</span>
+<span class="kw">END</span> <span class="ty">Dataflow</span>;</pre>
+    </div>
+
+    <!-- ===================== ram.vhd (ya presentado arriba) ===================== -->
+    <h4 style="margin-top:2rem">6. RAM Genérica — <code>ram.vhd</code> (Behavioral / Secuencial)</h4>
+    <p>El componente <code>ram.vhd</code> ya se presentó arriba como parte de la versión portable. Es el <strong>único componente nuevo</strong> que reemplaza al <code>lpm_ram_dq</code> de Altera. Implementa RAM 32×8 con escritura síncrona, lectura combinacional, y programa embebido como constante <code>INIT</code>.</p>
+
+    <div class="info-box">
+      <strong>📁 Estructura de archivos del proyecto EC-2 portable:</strong><br>
+      Cada componente se guarda en su propio archivo <code>.vhd</code>. Todos los archivos deben agregarse al proyecto de síntesis o simulación.<br><br>
+      <code style="display:block; background:var(--bg-code); color:var(--fg-code); padding:1rem; border-radius:6px; font-size:0.9rem; line-height:1.6">
+ec2_portable/<br>
+├── reg.vhd          <span style="color:#6ee7b7">← Registro genérico (behavioral)</span><br>
+├── increment.vhd    <span style="color:#6ee7b7">← Incrementador (dataflow)</span><br>
+├── mux2.vhd         <span style="color:#6ee7b7">← Multiplexor 2:1 (dataflow)</span><br>
+├── mux4.vhd         <span style="color:#6ee7b7">← Multiplexor 4:1 (dataflow)</span><br>
+├── addsub.vhd       <span style="color:#6ee7b7">← Sumador/Restador (dataflow)</span><br>
+├── ram.vhd          <span style="color:#6ee7b7">← RAM 32×8 con programa (behavioral)</span><br>
+├── dp.vhd           <span style="color:#6ee7b7">← Datapath estructural (versión portable)</span><br>
+├── cu.vhd           <span style="color:#6ee7b7">← Unidad de control (FSM behavioral)</span><br>
+└── mp.vhd           <span style="color:#6ee7b7">← Top-level: conecta CU + Datapath</span></code>
     </div>
 
     <!-- EC-2 Top-Level Structural -->
@@ -2371,6 +2934,112 @@ function copyCode(btn) {
   }
 }
 
+// Download code functionality — uses Claude downloads capability
+// No caching: window.claude.use() is memoized internally, safe to call each time
+const fileMap = {
+  'ec-1 behavioral': 'ec1_behavioral.vhd',
+  'ec-2 behavioral': 'ec2_behavioral.vhd',
+  'ec-2 control unit (fsm)': 'cu.vhd',
+  'ec-2 datapath (structural) — versión altera/lpm': 'dp_lpm.vhd',
+  'componente ram genérico (ram.vhd)': 'ram.vhd',
+  'ec-2 datapath (structural) — versión portable': 'dp_portable.vhd',
+  'reg.vhd (behavioral)': 'reg.vhd',
+  'increment.vhd (dataflow)': 'increment.vhd',
+  'mux2.vhd (dataflow)': 'mux2.vhd',
+  'mux4.vhd (dataflow)': 'mux4.vhd',
+  'addsub.vhd (dataflow)': 'addsub.vhd',
+  'ec-2 top-level structural': 'mp.vhd',
+};
+
+function getFilename(block) {
+  const langSpan = block.querySelector('.code-lang');
+  let label = langSpan ? langSpan.textContent.trim() : 'codigo';
+  let cleanLabel = label.replace(/^vhdl\s*—\s*/i, '').toLowerCase();
+  if (fileMap[cleanLabel]) return fileMap[cleanLabel];
+  if (label.toLowerCase().includes('mif')) return 'program.mif';
+  if (label.toLowerCase().includes('ensamblador')) return 'programa.txt';
+  return 'codigo.txt';
+}
+
+function showBtnFeedback(btn, msg, duration) {
+  btn.textContent = msg;
+  btn.classList.add('downloaded');
+  setTimeout(() => {
+    btn.textContent = 'Descargar';
+    btn.classList.remove('downloaded');
+  }, duration || 2000);
+}
+
+async function downloadCode(btn) {
+  const block = btn.closest('.code-block');
+  const pre = block.querySelector('.code-body');
+  const text = pre.textContent;
+  const filename = getFilename(block);
+
+  // 1) Try Claude Artifact downloads capability
+  try {
+    const dl = await window.claude.use("downloads");
+    if (dl) {
+      await dl.save({ filename: filename, data: text });
+      showBtnFeedback(btn, '¡Descargado!', 2000);
+      return;
+    }
+  } catch(e) {
+    if (e && e.code === 'declined') return;
+    // Not in artifact viewer or capability unavailable — continue
+  }
+
+  // 2) Blob URL download (works on GitHub Pages / standalone browsers)
+  try {
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
+    showBtnFeedback(btn, '¡Descargado!', 2000);
+    return;
+  } catch(e) {
+    // Blob download failed — continue
+  }
+
+  // 3) Clipboard fallback
+  try {
+    await navigator.clipboard.writeText(text);
+    showBtnFeedback(btn, '¡Copiado al portapapeles!', 2500);
+    return;
+  } catch(e) {}
+
+  // 4) Last resort: select text visually
+  try {
+    const range = document.createRange();
+    range.selectNodeContents(pre);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    showBtnFeedback(btn, 'Texto seleccionado — copia con Ctrl+C', 3000);
+  } catch(e) {
+    showBtnFeedback(btn, 'Error al descargar', 2000);
+  }
+}
+
+// Add download buttons to all code blocks
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.code-block .copy-btn').forEach(copyBtn => {
+    const dlBtn = document.createElement('button');
+    dlBtn.className = 'download-btn';
+    dlBtn.textContent = 'Descargar';
+    dlBtn.addEventListener('click', function() { downloadCode(this); });
+    copyBtn.parentNode.insertBefore(dlBtn, copyBtn);
+  });
+});
+
 // Tab functionality
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -2416,6 +3085,3 @@ document.querySelectorAll('.nav-links a').forEach(a => {
   });
 });
 </script>
-
-</body>
-</html>
